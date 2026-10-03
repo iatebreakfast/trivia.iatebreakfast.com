@@ -1,0 +1,4 @@
+# Add to the existing tunnel's config.yml under `ingress:`,
+# above the final `- service: http_status:404` line.
+  - hostname: trivia.iatebreakfast.com
+    service: http://localhost:8093
