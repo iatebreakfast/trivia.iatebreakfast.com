@@ -213,6 +213,7 @@ button{font-family:inherit;color:inherit}
 .sheet{position:absolute;inset:0;z-index:8;display:grid;place-items:center;padding:16px;overflow:auto;text-align:center;
   background:radial-gradient(80% 55% at 50% 20%,color-mix(in srgb,var(--accent) 26%,transparent),transparent 75%),rgba(14,14,14,.97)}
 .sheet-in{width:100%;max-width:520px}
+#who{z-index:9}
 .sheet .eyebrow{font:650 11px/1 var(--mono);letter-spacing:.13em;text-transform:uppercase;color:var(--ink-dim);margin:0 0 10px}
 .sheet h2{margin:0 0 12px;font-size:clamp(24px,4vw,34px);font-weight:820;letter-spacing:-.03em}
 .name-display{display:flex;align-items:center;justify-content:center;gap:2px;height:58px;margin:0 auto 14px;max-width:360px;
@@ -272,6 +273,54 @@ button{font-family:inherit;color:inherit}
   background:#f2f2f2;color:#111;font:650 13px/1 var(--sans);padding:12px 16px;border-radius:10px;transition:.25s;z-index:99}
 .toast.show{opacity:1;transform:translateX(-50%)}
 
+/* Scoreboard strip (2–4 players) */
+.strip{display:flex;gap:var(--gap);padding:var(--gap) var(--gap) 0}
+.pchip{flex:1;min-width:0;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:7px 11px;
+  border-radius:9px;background:var(--elev);border:1px solid var(--line);transition:background .2s,border-color .2s}
+.pchip .pn{font:750 12px/1 var(--mono);letter-spacing:.06em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--ink-dim)}
+.pchip .ps{font:850 15px/1 var(--mono);color:var(--cream);font-variant-numeric:tabular-nums;white-space:nowrap}
+.pchip .ps.neg{color:var(--bad)}
+.pchip.turn{border-color:var(--accent);background:var(--tint)}
+.pchip.turn .pn{color:#fff}
+.pchip.turn .pn::before{content:"▶ ";color:var(--accent-ink)}
+.ghost.ll{white-space:nowrap}
+.chip-btn .short{display:none}
+.clue-who{font:750 11px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--accent-ink)}
+
+/* Player setup */
+.seg{display:inline-flex;background:rgba(0,0,0,.35);border:1px solid var(--line);border-radius:22px;padding:3px;margin:0 auto 14px}
+.seg button{border:0;background:transparent;color:var(--ink-dim);font:700 13px/1 var(--sans);padding:9px 16px;border-radius:18px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--accent);color:#fff}
+.slots{display:grid;gap:8px;max-width:380px;margin:0 auto}
+.slot{display:flex;align-items:center;gap:12px;height:52px;padding:0 14px;border-radius:11px;border:1px solid var(--line-2);
+  background:#1b1b1b;cursor:pointer;text-align:left;transition:.15s}
+.slot:hover{border-color:var(--ink-dim)}
+.slot .sl{font:700 10px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--ink-faint);width:62px;flex:0 0 auto}
+.slot .sn{font:850 18px/1 var(--mono);letter-spacing:.1em;color:var(--cream);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.slot .sn.empty{font:600 13px/1 var(--sans);letter-spacing:0;color:var(--ink-faint)}
+.slot .edit{font:650 11px/1 var(--sans);color:var(--ink-faint)}
+.setup-note{font-size:12px;color:var(--ink-faint);margin:12px auto 0;max-width:380px;line-height:1.5}
+.practice{display:inline-block;font:700 10px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:#f5c84b;
+  border:1px solid rgba(245,200,75,.4);border-radius:6px;padding:5px 8px;margin-top:10px}
+
+/* Leaderboard tabs + tags */
+.tabs{display:inline-flex;background:rgba(0,0,0,.35);border:1px solid var(--line);border-radius:22px;padding:3px;margin:0 auto 12px}
+.tabs button{border:0;background:transparent;color:var(--ink-dim);font:700 12.5px/1 var(--sans);padding:8px 14px;border-radius:18px;cursor:pointer}
+.tabs button[aria-selected="true"]{background:var(--elev-2);color:#fff}
+.tag{display:inline-block;font:700 9px/1 var(--mono);letter-spacing:.06em;padding:3px 5px;border-radius:4px;background:var(--elev-2);
+  color:var(--ink-faint);margin-left:6px;vertical-align:2px}
+.podium{list-style:none;margin:14px auto 0;padding:0;width:min(420px,100%);text-align:left}
+.podium li{display:grid;grid-template-columns:34px minmax(0,1fr) auto;gap:10px;align-items:center;padding:9px 12px;border-radius:10px;margin-bottom:4px;background:var(--elev)}
+.podium li:first-child{background:var(--tint);outline:1.5px solid var(--accent)}
+.podium .r{font:800 15px/1 var(--mono);text-align:right;color:var(--ink-faint)}
+.podium li:first-child .r{color:#f5c84b}
+.podium .n{font:800 15px/1.2 var(--mono);letter-spacing:.06em}
+.podium .n small{display:block;font:600 10.5px/1.3 var(--sans);letter-spacing:0;color:var(--ink-faint);margin-top:3px}
+.podium .s{font:850 17px/1 var(--mono);color:var(--cream)}
+.podium .s.neg{color:var(--bad)}
+.icon-sq{width:34px;justify-content:center;padding:0}
+.icon-sq[aria-pressed="false"] svg{opacity:.45}
+
 /* ── phones ─────────────────────────────────────────────── */
 @media (max-width:760px){
   body{padding:0 0 env(safe-area-inset-bottom)}
@@ -302,6 +351,12 @@ button{font-family:inherit;color:inherit}
   .foot p{font-size:10px}
   .chip-btn{max-width:96px;padding:0 8px}
   .chip-btn.lbtn span{display:none}
+  .pchip{padding:6px 7px;gap:4px}
+  .clue-who{display:none}
+  .chip-btn .full{display:none} .chip-btn .short{display:inline}
+  .pchip .pn{font-size:10px;letter-spacing:.02em}
+  .pchip .ps{font-size:12px}
+  .slot .sl{width:52px}
   .kbd{gap:4px;grid-template-columns:repeat(10,minmax(0,1fr))}
   .kbd button{height:44px;font-size:15px;border-radius:7px}
   .numpad{grid-template-columns:repeat(3,72px)}
@@ -310,7 +365,7 @@ button{font-family:inherit;color:inherit}
 }
 @media (max-width:440px){ .brand-name{display:none} }
 @media (max-height:640px){ .pad button{height:40px} .numpad button{height:42px} .dd p{margin:6px 0 8px} }
-@media (max-height:700px) and (max-width:760px){ .prompt p{display:none} }
+@media (max-height:700px) and (max-width:760px){ .prompt p{margin-top:4px;font-size:12px} .prompt h2{font-size:20px} }
 @media (prefers-reduced-motion:reduce){ *{transition:none !important;animation:none !important} }
 </style>
 </head>
@@ -336,11 +391,14 @@ button{font-family:inherit;color:inherit}
     <a href="https://music.iatebreakfast.com">Archive</a>
   </nav>
   <div class="hud">
-    <button class="chip-btn" id="player" title="Change player">
+    <button class="chip-btn" id="player" title="Players">
       <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span id="player-name">Player</span>
     </button>
     <button class="chip-btn lbtn" id="scores-btn" title="High scores">
       <svg viewBox="0 0 24 24"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/></svg><span>Scores</span>
+    </button>
+    <button class="chip-btn icon-sq" id="sound" title="Sound effects" aria-pressed="true">
+      <svg viewBox="0 0 24 24"><path d="M11 5 6 9H2v6h4l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/></svg>
     </button>
     <div class="bank" id="bank" aria-live="polite">$0</div>
     <button class="icon-btn" id="newgame" title="New board">
@@ -350,6 +408,7 @@ button{font-family:inherit;color:inherit}
 </header>
 
 <main class="stage" id="stage">
+  <div class="strip" id="strip" hidden></div>
   <div class="board" id="board" role="grid" aria-label="Game board"></div>
   <div class="notice" id="notice"><div><b>Loading the library…</b>Fetching 6,000+ chart records</div></div>
 
@@ -375,6 +434,7 @@ button{font-family:inherit;color:inherit}
     <div class="clue-head">
       <span class="clue-cat" id="c-cat"></span>
       <span class="clue-amt" id="c-amt"></span>
+      <span class="clue-who" id="c-who"></span>
       <span class="sp"></span>
       <button class="ghost ll" id="fifty" title="Remove two wrong answers (once per board)">50 : 50</button>
     </div>
@@ -427,9 +487,9 @@ button{font-family:inherit;color:inherit}
     <div class="line" id="end-line"></div>
     <div id="end-best"></div>
     <div class="placed" id="end-placed"></div>
+    <ol class="podium" id="end-podium" hidden></ol>
     <ol class="lb" id="end-lb"></ol>
     <div class="row">
-      <button class="ghost" id="end-save" hidden>Save to high scores</button>
       <button class="primary" id="again">Play a new board</button>
       <button class="ghost" id="share"><svg viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/></svg>Copy result</button>
     </div>
@@ -438,11 +498,28 @@ button{font-family:inherit;color:inherit}
   <section class="sheet" id="who" hidden>
     <div class="sheet-in">
       <p class="eyebrow">Name That Track</p>
-      <h2>Who's playing?</h2>
+      <h2 id="who-title">Who's playing?</h2>
       <div class="name-display" id="name-display"></div>
       <div class="pad kbd" id="kbd"></div>
       <div class="row">
-        <button class="ghost" id="name-guest">Play as guest</button>
+        <button class="ghost" id="name-cancel">Cancel</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Players: 1–4, pass-and-play -->
+  <section class="sheet" id="setup" hidden>
+    <div class="sheet-in">
+      <p class="eyebrow">Name That Track</p>
+      <h2>Who's playing?</h2>
+      <div class="seg" id="pcount" role="group" aria-label="Number of players">
+        <button data-n="1">1 player</button><button data-n="2">2</button><button data-n="3">3</button><button data-n="4">4</button>
+      </div>
+      <div class="slots" id="slots"></div>
+      <p class="setup-note" id="setup-note"></p>
+      <div class="row">
+        <button class="primary" id="setup-go">Start the board</button>
+        <button class="ghost" id="setup-cancel">Cancel</button>
       </div>
     </div>
   </section>
@@ -450,8 +527,13 @@ button{font-family:inherit;color:inherit}
   <!-- High scores -->
   <section class="sheet" id="lbsheet" hidden>
     <div class="sheet-in">
-      <p class="eyebrow">Everyone, all time</p>
+      <p class="eyebrow">Everyone</p>
       <h2>High scores</h2>
+      <div class="tabs" id="lb-tabs" role="tablist">
+        <button role="tab" data-p="week" aria-selected="true">This week</button>
+        <button role="tab" data-p="month" aria-selected="false">This month</button>
+        <button role="tab" data-p="all" aria-selected="false">All time</button>
+      </div>
       <div class="lb-scroll"><ol class="lb" id="lb-list"></ol></div>
       <div class="row"><button class="primary" id="lb-close">Back to the game</button></div>
     </div>
@@ -460,7 +542,7 @@ button{font-family:inherit;color:inherit}
 
 <footer class="foot">
   <a class="bmc" href="https://www.buymeacoffee.com/iatebreakfast" target="_blank" rel="noopener"><span aria-hidden="true">&#9749;</span> Buy me a coffee</a>
-  <p id="foot-stats">6,000+ year-end chart records, 1946–2020 · <a href="https://iatebreakfast.com">iatebreakfast.com</a></p>
+  <p id="foot-stats">6,000+ year-end chart records, 1946–2020 · 11 genres · <a href="https://iatebreakfast.com">iatebreakfast.com</a></p>
   <span class="keys"><kbd>A</kbd>–<kbd>D</kbd> answer · <kbd>R</kbd> replay · <kbd>Esc</kbd> pass</span>
 </footer>
 
@@ -471,19 +553,18 @@ button{font-family:inherit;color:inherit}
    CONFIG
    ══════════════════════════════════════════════════════════ */
 const CONFIG = {
-  libraryUrl: "https://audio.iatebreakfast.com/library.json",
-  genresUrl:  "genres.json",            // artist → genre, from Last.fm tags (same folder)
-  scoresUrl:  "api/scores",             // shared high scores (server/scores.py behind nginx)
-  nameMax:    12,
-  wagerMin:   5,
+  api:        "api",                    // game + scores server (server/scores.py behind nginx)
+  libraryUrl: "https://audio.iatebreakfast.com/library.json",   // practice mode only
+  genresUrl:  "genres.json",                                     // practice mode only
   columns:    6,
   values:     [200, 400, 600, 800, 1000],
-  // Row difficulty: which year-end ranks a row draws from, and how long its clip is.
-  // $200 = the biggest hits with a long clip; $1000 = deep cuts with a short one.
   rankBands:  [[1, 20], [21, 40], [41, 60], [61, 80], [81, 100]],
   clipSecs:   [12, 10, 8, 7, 6],
   revealPlay: 12,                       // seconds the song keeps playing after you answer
-  minPerCell: 3                         // a genre needs this many songs in every row to be used
+  minPerCell: 3,
+  nameMax:    12,
+  wagerMin:   5,
+  maxPlayers: 4
 };
 /* ════════════════════════════════════════════════════════ */
 
@@ -494,7 +575,7 @@ const store = {
   get(k, d){ try { const v = localStorage.getItem("abt:" + k); return v == null ? d : JSON.parse(v); } catch { return d; } },
   set(k, v){ try { localStorage.setItem("abt:" + k, JSON.stringify(v)); } catch {} }
 };
-const norm = s => String(s || "").toLowerCase()
+const norm = s => String(s || "").normalize("NFKD").toLowerCase()
   .replace(/\(.*?\)|\[.*?\]/g, "").replace(/&/g, "and").replace(/[^a-z0-9]+/g, " ").trim();
 const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.random() * (i + 1) | 0; [a[i], a[j]] = [a[j], a[i]]; } return a; };
 const pick = a => a[Math.random() * a.length | 0];
@@ -502,14 +583,177 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 /* Phone-width column headers for the long genre names. */
 const SHORT = { "Dance & Electronic": "Dance", "Rock 'n' Roll & Doo-Wop": "Rock 'n' Roll", "Soft Rock & Folk": "Soft Rock",
-  "Crooners & Swing": "Crooners", "Funk & Disco": "Funk & Disco", "Soul & R&B": "Soul & R&B" };
+  "Crooners & Swing": "Crooners" };
 
-/* ── state ──────────────────────────────────────────────── */
-let ALL = [];            // every track
-let GENRES = [];         // [{name, tracks}]
-let game = null;
+/* ══════════════════════════════════════════════════════════
+   SOUND EFFECTS — synthesised with Web Audio, no files to load.
+   ══════════════════════════════════════════════════════════ */
+const SFX = (() => {
+  let ctx = null, master = null, on = store.get("sound", true);
+  function ac(){
+    if (!ctx) {
+      const C = window.AudioContext || window.webkitAudioContext; if (!C) return null;
+      ctx = new C(); master = ctx.createGain(); master.gain.value = .32; master.connect(ctx.destination);
+    }
+    if (ctx.state === "suspended") ctx.resume();
+    return ctx;
+  }
+  function tone(freq, t0, dur, { type = "sine", vol = .5, slide = 0, attack = .008 } = {}){
+    const c = ac(); if (!c) return;
+    const o = c.createOscillator(), g = c.createGain(), t = c.currentTime + t0;
+    o.type = type; o.frequency.setValueAtTime(freq, t);
+    if (slide) o.frequency.exponentialRampToValueAtTime(freq * slide, t + dur);
+    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vol, t + attack);
+    g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+    o.connect(g); g.connect(master); o.start(t); o.stop(t + dur + .05);
+  }
+  function noise(t0, dur, { vol = .3, from = 800, to = 4000 } = {}){
+    const c = ac(); if (!c) return;
+    const n = c.sampleRate * dur, buf = c.createBuffer(1, n, c.sampleRate), d = buf.getChannelData(0);
+    for (let i = 0; i < n; i++) d[i] = Math.random() * 2 - 1;
+    const src = c.createBufferSource(), f = c.createBiquadFilter(), g = c.createGain(), t = c.currentTime + t0;
+    src.buffer = buf; f.type = "bandpass"; f.Q.value = 1.2;
+    f.frequency.setValueAtTime(from, t); f.frequency.exponentialRampToValueAtTime(to, t + dur);
+    g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+    src.connect(f); f.connect(g); g.connect(master); src.start(t); src.stop(t + dur);
+  }
+  const N = { C5: 523.25, E5: 659.25, G5: 783.99, C6: 1046.5, A4: 440, D5: 587.33, F5: 698.46, B4: 493.88 };
+  const play = {
+    tap(){ tone(1400, 0, .04, { type: "triangle", vol: .12 }); },
+    select(){ tone(660, 0, .09, { type: "square", vol: .12 }); tone(990, .07, .12, { type: "square", vol: .1 }); },
+    lock(){ tone(392, 0, .16, { type: "sawtooth", vol: .14 }); tone(523, .14, .28, { type: "sawtooth", vol: .14 }); noise(0, .25, { vol: .05 }); },
+    right(){ [N.C5, N.E5, N.G5, N.C6].forEach((f, i) => { tone(f, i * .08, .5, { vol: .32 }); tone(f * 2, i * .08, .25, { type: "triangle", vol: .06 }); }); },
+    wrong(){ tone(110, 0, .55, { type: "sawtooth", vol: .28 }); tone(116, 0, .55, { type: "sawtooth", vol: .22 }); tone(82, .1, .5, { type: "square", vol: .1, slide: .8 }); },
+    pass(){ tone(440, 0, .18, { type: "triangle", vol: .16, slide: .7 }); },
+    fifty(){ noise(0, .35, { vol: .25, from: 3000, to: 400 }); tone(880, .05, .2, { type: "triangle", vol: .08, slide: .5 }); },
+    dd(){ noise(0, .5, { vol: .18, from: 300, to: 6000 });
+      [N.C5, N.E5, N.G5, N.C6, N.G5, N.C6].forEach((f, i) => tone(f, .25 + i * .09, i === 5 ? .9 : .2, { type: "square", vol: .14 }));
+      tone(N.C6 * 2, .8, .9, { vol: .08 }); },
+    end(){ [N.G5, N.E5, N.C5, N.D5, N.E5, N.C6].forEach((f, i) => tone(f, i * .13, i === 5 ? 1 : .22, { type: "triangle", vol: .28 })); },
+    turn(){ tone(N.A4, 0, .12, { type: "triangle", vol: .1 }); tone(N.D5, .1, .18, { type: "triangle", vol: .1 }); }
+  };
+  return {
+    play(name){ if (on && play[name]) try { play[name](); } catch {} },
+    unlock(){ ac(); },
+    get on(){ return on; },
+    set on(v){ on = !!v; store.set("sound", on); }
+  };
+})();
 
-/* ── audio (same clip engine as before) ─────────────────── */
+/* ══════════════════════════════════════════════════════════
+   ENGINES — the server runs scored games; practice mode runs
+   the same rules in the browser when the server is unreachable.
+   Both expose: start(names), open(i), wager(n), fifty(), answer(k)
+   ══════════════════════════════════════════════════════════ */
+async function api(path, body){
+  const r = await fetch(`${CONFIG.api}/${path}`, {
+    method: body === undefined ? "GET" : "POST", cache: "no-store",
+    headers: body === undefined ? {} : { "Content-Type": "application/json" },
+    body: body === undefined ? undefined : JSON.stringify(body)
+  });
+  const data = await r.json().catch(() => ({}));
+  if (!r.ok) { const e = new Error(data.error || "HTTP " + r.status); e.status = r.status; throw e; }
+  return data;
+}
+
+const RemoteEngine = {
+  online: true,
+  async start(names){ const g = await api("game", { players: names }); this.id = g.id; return g; },
+  open(i){ return api(`game/${this.id}/open`, { cell: i }); },
+  wager(n){ return api(`game/${this.id}/wager`, { amount: n }); },
+  fifty(){ return api(`game/${this.id}/fifty`, {}); },
+  answer(k){ return api(`game/${this.id}/answer`, { choice: k }); }
+};
+
+/* Practice mode: same board rules, run locally, nothing saved. */
+const LocalEngine = (() => {
+  let ALL = [], GENRES = {}, g = null, loading = null;
+  async function load(){
+    if (ALL.length) return;
+    if (!loading) loading = (async () => {
+      const [libRes, genRes] = await Promise.all([fetch(CONFIG.libraryUrl), fetch(CONFIG.genresUrl).catch(() => null)]);
+      if (!libRes.ok) throw new Error("library offline");
+      const lib = await libRes.json();
+      const gen = genRes && genRes.ok ? await genRes.json().catch(() => null) : null;
+      ALL = (lib.tracks || []).filter(t => t && t.u && t.t && t.a && t.y).map(t => {
+        const row = Math.max(0, CONFIG.rankBands.findIndex(([lo, hi]) => t.r >= lo && t.r <= hi));
+        return { ...t, k: norm(t.t), d: t.d || Math.floor(t.y / 10) * 10 + "s",
+          row: t.r ? (row < 0 ? 4 : row) : 4, s: t.s || 180 };
+      });
+      ALL.forEach(t => { t.row = t.r ? CONFIG.rankBands.findIndex(([lo, hi]) => t.r >= lo && t.r <= hi) : 4; if (t.row < 0) t.row = 4; });
+      if (gen && gen.labels) ALL.forEach(t => { const i = gen.artists[t.a]; t.g = i == null ? null : gen.labels[i]; });
+      else ALL.forEach(t => t.g = t.d);
+      const names = [...new Set(ALL.map(t => t.g).filter(Boolean))];
+      names.forEach(n => {
+        const gt = ALL.filter(t => t.g === n);
+        if (CONFIG.values.every((_, row) => gt.filter(t => t.row === row).length >= CONFIG.minPerCell)) GENRES[n] = gt;
+      });
+    })();
+    return loading;
+  }
+  function options(answer, row){
+    const [span, same] = [[8, false], [6, false], [5, true], [3, true], [2, true]][row];
+    const taken = new Set([answer.k]), decoys = [];
+    for (const ok of [t => Math.abs(t.y - answer.y) <= span && (!same || t.g === answer.g),
+                      t => Math.abs(t.y - answer.y) <= span * 2 && (!same || t.g === answer.g),
+                      t => Math.abs(t.y - answer.y) <= 15, () => true]) {
+      for (const t of shuffle(ALL.filter(ok))) { if (decoys.length >= 3) break; if (!taken.has(t.k)) { taken.add(t.k); decoys.push(t); } }
+      if (decoys.length >= 3) break;
+    }
+    return shuffle([answer, ...decoys]);
+  }
+  const pub = () => g.players.map(p => ({ name: p.name, score: p.score, right: p.right, wrong: p.wrong, fifty: p.fifty }));
+  const clipOf = c => ({ clip: { src: c.answer.u, start: c.start, end: c.end }, options: c.options.map(o => o.t),
+                         decade: c.answer.d, clipSecs: CONFIG.clipSecs[c.row] });
+  return {
+    online: false,
+    async start(names){
+      await load();
+      const cats = shuffle(Object.keys(GENRES)).slice(0, CONFIG.columns), used = new Set(), cells = [];
+      cats.forEach((name, col) => CONFIG.values.forEach((value, row) => {
+        const gt = GENRES[name];
+        const pool = gt.filter(t => t.row === row && !used.has(t.k));
+        const answer = pick(pool.length ? pool : gt.filter(t => t.row === row)); used.add(answer.k);
+        const dur = answer.s, len = CONFIG.clipSecs[row];
+        const lo = Math.min(Math.max(15, dur * .22), Math.max(0, dur - len - 5)), hi = Math.max(lo, dur * .6 - len);
+        const start = lo + Math.random() * (hi - lo);
+        cells.push({ i: cells.length, col, row, value, genre: name, answer, options: options(answer, row),
+                     start, end: Math.min(dur - 1, start + len), dd: false, done: false });
+      }));
+      pick(cells.filter(c => c.row > 0)).dd = true;
+      g = { cats, cells, players: names.map(n => ({ name: n, score: 0, right: 0, wrong: 0, fifty: true })), turn: 0, open: null };
+      return { cats, values: CONFIG.values, cells: cells.map(({ i, col, row, value }) => ({ i, col, row, value })), players: pub(), turn: 0 };
+    },
+    async open(i){
+      const c = g.cells[i]; if (c.done || g.open != null) throw new Error("not available");
+      g.open = c; g.wager = null;
+      if (c.dd) return { dd: true, max: Math.max(g.players[g.turn].score, 1000), min: CONFIG.wagerMin, genre: c.genre };
+      return { dd: false, ...clipOf(c) };
+    },
+    async wager(n){ g.wager = n; return { wager: n, ...clipOf(g.open) }; },
+    async fifty(){
+      const p = g.players[g.turn]; if (!p.fifty) throw new Error("used");
+      p.fifty = false;
+      return { remove: shuffle(g.open.options.map((o, k) => k).filter(k => g.open.options[k] !== g.open.answer)).slice(0, 2) };
+    },
+    async answer(k){
+      const c = g.open, p = g.players[g.turn], correct = c.options.indexOf(c.answer), right = k === correct;
+      const stake = c.dd ? g.wager : c.value, win = c.dd ? stake * 2 : stake;
+      const delta = k == null ? 0 : (right ? win : -stake);
+      p.score += delta; if (right) p.right++; else if (k != null) p.wrong++;
+      c.done = true; c.outcome = k == null ? "skip" : (right ? "ok" : "no"); g.open = null;
+      const by = g.turn; g.turn = (g.turn + 1) % g.players.length;
+      const a = c.answer, finished = g.cells.every(x => x.done);
+      return { correct, right, delta, stake, dd: c.dd, outcome: c.outcome, by,
+               answer: { t: a.t, a: a.a, y: a.y, r: a.r, c: a.c, d: a.d }, players: pub(), turn: g.turn,
+               finished, ranks: finished ? g.players.map(() => null) : undefined };
+    }
+  };
+})();
+
+/* ══════════════════════════════════════════════════════════
+   AUDIO CLIPS
+   ══════════════════════════════════════════════════════════ */
 const audio = new Audio();
 audio.preload = "auto";
 const clip = { raf: 0, fadeT: 0, end: 0 };
@@ -530,10 +774,10 @@ async function stopAudio(ms = 350){
   if (!audio.paused) { await fade(0, ms); audio.pause(); }
   spinning(false);
 }
-function playSpan(track, from, to, countdown = true){
+function playSpan(src, from, to, countdown = true){
   cancelAnimationFrame(clip.raf);
   clip.end = to;
-  if (audio.dataset.u !== track.u) { audio.src = track.u + "#t=" + from.toFixed(1); audio.dataset.u = track.u; }
+  if (audio.dataset.u !== src) { audio.src = src + "#t=" + from.toFixed(1); audio.dataset.u = src; }
   else { try { audio.currentTime = from; } catch {} }
   audio.volume = 0;
   const seek = () => { if (Math.abs(audio.currentTime - from) > 1.5) { try { audio.currentTime = from; } catch {} } };
@@ -550,204 +794,144 @@ function playSpan(track, from, to, countdown = true){
   };
   clip.raf = requestAnimationFrame(tick);
 }
-audio.addEventListener("playing", () => { if (game && game.cur) { game.cur.fails = 0; } });
 audio.addEventListener("error", () => {
-  if (!game || !game.cur || game.cur.phase !== "ask" || !audio.src) return;
-  if (audio.error && audio.error.code === 1) return;
-  /* A file that won't load shouldn't cost the player: swap in another song for this cell. */
-  const c = game.cur;
-  c.fails = (c.fails || 0) + 1;
-  if (c.fails <= 3) { refillCell(c); renderClue(); playCurrent(); return; }
+  if (!game || !game.cur || game.cur.phase !== "ask" || !audio.src || (audio.error && audio.error.code === 1)) return;
   spinning(false);
-  $("p-title").textContent = "The music server isn't answering";
-  $("p-sub").textContent = "audio.iatebreakfast.com may be offline. Try Replay in a moment.";
+  $("p-title").textContent = "This clip didn't load";
+  $("p-sub").textContent = "Try Replay — or Pass, which costs nothing.";
 });
 
-/* ── data ───────────────────────────────────────────────── */
-async function load(){
-  try {
-    const [libRes, genRes] = await Promise.all([
-      fetch(CONFIG.libraryUrl, { cache: "default" }),
-      fetch(CONFIG.genresUrl, { cache: "no-cache" }).catch(() => null)
-    ]);
-    if (!libRes.ok) throw new Error("library HTTP " + libRes.status);
-    const lib = await libRes.json();
-    ALL = (lib.tracks || []).filter(t => t && t.u && t.t && t.a && t.y);
-    ALL.forEach(t => {
-      t.k = norm(t.t); t.ak = norm(t.a);
-      if (!t.d) t.d = Math.floor(t.y / 10) * 10 + "s";
-      t.row = t.r ? CONFIG.rankBands.findIndex(([lo, hi]) => t.r >= lo && t.r <= hi) : -1;
-      if (t.row < 0) t.row = CONFIG.rankBands.length - 1;
-    });
+/* ══════════════════════════════════════════════════════════
+   GAME STATE + BOARD
+   ══════════════════════════════════════════════════════════ */
+let game = null;
+const party = { names: store.get("players", null) || (store.get("name", "") ? [store.get("name", "")] : null) };
 
-    let gen = null;
-    if (genRes && genRes.ok) { try { gen = await genRes.json(); } catch {} }
-    if (gen && gen.labels && gen.artists) {
-      ALL.forEach(t => { const i = gen.artists[t.a]; t.g = i == null ? null : gen.labels[i]; });
-      GENRES = gen.labels.map(name => ({ name, tracks: ALL.filter(t => t.g === name) }));
-    } else {
-      /* No genre file: fall back to decades so the game still works. */
-      const ds = [...new Set(ALL.map(t => t.d))].sort();
-      ALL.forEach(t => t.g = t.d);
-      GENRES = ds.map(name => ({ name, tracks: ALL.filter(t => t.d === name) }));
-    }
-    GENRES = GENRES.filter(g => CONFIG.values.every((_, row) =>
-      g.tracks.filter(t => t.row === row).length >= CONFIG.minPerCell));
-    $("foot-stats").innerHTML = `${ALL.length.toLocaleString("en-US")} year-end chart records · ${GENRES.length} genres · <a href="https://iatebreakfast.com">iatebreakfast.com</a>`;
-    $("notice").hidden = true;
-    newBoard();
-  } catch (err) {
-    console.error(err);
-    $("notice").innerHTML = `<div><b>The music library is offline</b>audio.iatebreakfast.com didn't answer. Try again in a minute.</div>`;
-  }
-}
-
-/* ── board building ─────────────────────────────────────── */
-function newBoard(){
+async function startGame(names){
   stopAudio(150);
-  const cols = Math.min(CONFIG.columns, GENRES.length);
-  const cats = shuffle(GENRES.slice()).slice(0, cols);
-  const used = new Set();
-  const cells = [];
-  cats.forEach((g, col) => {
-    CONFIG.values.forEach((value, row) => {
-      const c = { col, row, value, genre: g.name, gtracks: g.tracks, done: false };
-      fillCell(c, used);
-      cells.push(c);
-    });
-  });
-  /* One secret Double Win tile, never in the $200 row. */
-  const ddPool = cells.filter(c => c.row > 0);
-  pick(ddPool).dd = true;
-  game = { cats, cells, used, score: 0, right: 0, wrong: 0, fifty: true, cur: null };
   $("end").hidden = true; $("clue").hidden = true; $("dd").hidden = true;
-  renderBoard(); updateBank(false);
-}
-
-function fillCell(c, used = game.used){
-  const pool = c.gtracks.filter(t => t.row === c.row && !used.has(t.k));
-  const answer = pick(pool.length ? pool : c.gtracks.filter(t => t.row === c.row));
-  used.add(answer.k);
-  c.answer = answer;
-  c.options = makeOptions(answer, c.row);
-  const dur = answer.s || 180, len = CONFIG.clipSecs[c.row];
-  const lo = Math.min(Math.max(15, dur * .22), Math.max(0, dur - len - 5));
-  const hi = Math.max(lo, dur * .6 - len);
-  c.start = lo + Math.random() * (hi - lo);
-  c.end = Math.min(dur - 1, c.start + len);
-}
-function refillCell(c){ fillCell(c); c.phase = "ask"; }
-
-/* Wrong answers get closer to the right one as the price rises:
-   $200 decoys can come from anywhere in the same decade; $1000 decoys
-   are from the same genre and within a couple of years. */
-function makeOptions(answer, row){
-  const spans = [[8, false], [6, false], [5, true], [3, true], [2, true]][row];
-  const [span, sameGenre] = spans;
-  const taken = new Set([answer.k]);
-  const decoys = [];
-  const tries = [
-    t => Math.abs(t.y - answer.y) <= span && (!sameGenre || t.g === answer.g),
-    t => Math.abs(t.y - answer.y) <= span * 2 && (!sameGenre || t.g === answer.g),
-    t => Math.abs(t.y - answer.y) <= 15,
-    () => true
-  ];
-  for (const ok of tries) {
-    for (const t of shuffle(ALL.filter(ok))) {
-      if (decoys.length >= 3) break;
-      if (taken.has(t.k)) continue;
-      taken.add(t.k); decoys.push(t);
+  $("notice").hidden = false;
+  $("notice").innerHTML = `<div><b>Dealing a new board…</b>Picking songs from 6,000+ chart records</div>`;
+  let engine = RemoteEngine, g;
+  try { g = await RemoteEngine.start(names); }
+  catch (err) {
+    if (err.status === 429) { await sleep(5200); try { g = await RemoteEngine.start(names); } catch (e) { err = e; } }
+    if (!g) {
+      if (err.status === 400) { $("notice").hidden = true; toast(err.message); openSetup(); return; }
+      engine = LocalEngine;
+      try { g = await LocalEngine.start(names); }
+      catch { $("notice").innerHTML = `<div><b>The music library is offline</b>audio.iatebreakfast.com didn't answer. Try again in a minute.</div>`; return; }
+      toast("Practice mode — the score server is offline, so scores won't be saved");
     }
-    if (decoys.length >= 3) break;
   }
-  return shuffle([answer, ...decoys]);
+  game = { engine, cats: g.cats, players: g.players, turn: g.turn, cur: null, finished: false,
+           cells: g.cells.map(c => ({ ...c, done: false, outcome: null, title: "" })) };
+  $("notice").hidden = true;
+  renderBoard(); renderPlayers(false);
 }
 
 function renderBoard(){
   const b = $("board");
   b.style.setProperty("--cols", game.cats.length);
-  let html = game.cats.map(g => `<div class="cat" role="columnheader"><span class="full">${esc(g.name)}</span>` +
-    `<span class="short">${esc(SHORT[g.name] || g.name)}</span></div>`).join("");
+  let html = game.cats.map(n => `<div class="cat" role="columnheader"><span class="full">${esc(n)}</span>` +
+    `<span class="short">${esc(SHORT[n] || n)}</span></div>`).join("");
   for (let row = 0; row < CONFIG.values.length; row++) {
     for (let col = 0; col < game.cats.length; col++) {
       const c = game.cells.find(x => x.col === col && x.row === row);
-      const cls = c.done ? (c.outcome || "") : "";
-      html += `<button class="cell ${cls}" data-i="${game.cells.indexOf(c)}" ${c.done ? "disabled" : ""}
-        aria-label="${esc(c.genre)} for ${money(c.value)}">
-        <span class="amt"><i>$</i>${c.value}</span><span class="res">${c.done ? esc(c.answer.t) : ""}</span></button>`;
+      html += `<button class="cell ${c.done ? c.outcome || "" : ""}" data-i="${c.i}" ${c.done ? "disabled" : ""}
+        aria-label="${esc(game.cats[col])} for ${money(c.value)}">
+        <span class="amt"><i>$</i>${c.value}</span><span class="res">${c.done ? esc(c.title) : ""}</span></button>`;
     }
   }
   b.innerHTML = html;
 }
 
-function updateBank(animate = true){
-  const el = $("bank");
-  el.textContent = money(game.score);
-  el.classList.toggle("neg", game.score < 0);
-  if (animate) { el.classList.remove("pop"); void el.offsetWidth; el.classList.add("pop"); }
+const solo = () => game && game.players.length === 1;
+const current = () => game.players[game.turn];
+const displayName = p => p.name || "Guest";
+
+function renderPlayers(animate = true){
+  const multi = !solo();
+  $("strip").hidden = !multi;
+  $("bank").hidden = multi;
+  $("player-name").innerHTML = multi ? `<span class="full">${game.players.length} players</span><span class="short">${game.players.length}P</span>`
+    : esc(displayName(game.players[0]));
+  if (multi) {
+    $("strip").innerHTML = game.players.map((p, i) =>
+      `<div class="pchip ${i === game.turn && !game.finished ? "turn" : ""}"><span class="pn">${esc(displayName(p))}</span>` +
+      `<span class="ps ${p.score < 0 ? "neg" : ""}">${money(p.score)}</span></div>`).join("");
+  } else {
+    const el = $("bank"), p = game.players[0];
+    el.textContent = money(p.score);
+    el.classList.toggle("neg", p.score < 0);
+    if (animate) { el.classList.remove("pop"); void el.offsetWidth; el.classList.add("pop"); }
+  }
 }
 
-/* ── playing a cell ─────────────────────────────────────── */
-function openCell(c){
-  if (c.done) return;
-  game.cur = c; c.phase = "ask"; c.wager = c.value;
-  document.documentElement.style.setProperty("--accent", "#e50914");
-  if (c.dd) return showDailyDouble(c);
-  showClue();
+/* ── playing a square ────────────────────────────────────── */
+async function openCell(i){
+  const c = game.cells[i];
+  if (!c || c.done || game.cur) return;
+  game.cur = { i, phase: "opening", dd: false };
+  SFX.play("select");
+  let r;
+  try { r = await game.engine.open(i); }
+  catch (err) { game.cur = null; toast(err.message); if (err.status === 404) startGame(party.names); return; }
+  game.cur.dd = r.dd;
+  if (r.dd) { game.cur.max = r.max; game.cur.wagerStr = ""; showDoubleWin(r); return; }
+  showClue(r);
 }
 
-/* Double Win: wager on the number pad. Right pays twice the wager; wrong loses it. */
-function wagerMax(){ return Math.max(game.score, 1000); }
-function showDailyDouble(c){
-  c.wagerStr = "";
-  $("dd-sub").innerHTML = `${esc(c.genre)} · a right answer pays <b>double</b> your wager, a wrong one loses it.`;
+function showDoubleWin(r){
+  SFX.play("dd");
+  $("dd-sub").innerHTML = `${esc(game.cats[game.cells[game.cur.i].col])}${solo() ? "" : ` · <b>${esc(displayName(current()))}</b>`}` +
+    ` · a right answer pays <b>double</b> your wager, a wrong one loses it.`;
   renderWager();
   $("dd").hidden = false;
 }
 function renderWager(){
-  const c = game.cur, max = wagerMax(), v = +(c.wagerStr || 0);
-  const ok = v >= CONFIG.wagerMin && v <= max;
+  const c = game.cur, max = c.max, v = +(c.wagerStr || 0);
   $("wager-display").textContent = money(v);
   $("wager-display").classList.toggle("bad", v > max);
-  $("wager-hint").textContent = v > max ? `Too high — your max is ${money(max)}` : `Wager ${money(CONFIG.wagerMin)} – ${money(max)}`;
-  $("wager-ok").disabled = !ok;
+  $("wager-hint").textContent = v > max ? `Too high — the max is ${money(max)}` : `Wager ${money(CONFIG.wagerMin)} – ${money(max)}`;
+  $("wager-ok").disabled = !(v >= CONFIG.wagerMin && v <= max);
 }
-function wagerKey(n){
-  const c = game.cur; if (!c || $("dd").hidden) return;
+async function wagerKey(n){
+  const c = game && game.cur; if (!c || $("dd").hidden || c.phase === "sending") return;
+  SFX.play("tap");
   if (n === "del") c.wagerStr = c.wagerStr.slice(0, -1);
-  else if (n === "max") c.wagerStr = String(wagerMax());
+  else if (n === "max") c.wagerStr = String(c.max);
   else if (n === "ok") {
     const v = +(c.wagerStr || 0);
-    if (v >= CONFIG.wagerMin && v <= wagerMax()) { c.wager = v; showClue(); }
+    if (!(v >= CONFIG.wagerMin && v <= c.max)) return;
+    c.phase = "sending";
+    try { const r = await game.engine.wager(v); c.wager = v; $("dd").hidden = true; showClue(r); }
+    catch (err) { c.phase = "opening"; toast(err.message); }
     return;
   } else if (/^\d$/.test(n) && c.wagerStr.length < 6) c.wagerStr = (c.wagerStr + n).replace(/^0+/, "");
   renderWager();
 }
 
-function showClue(){
-  $("dd").hidden = true;
-  renderClue();
-  $("clue").hidden = false;
-  playCurrent();
-}
-
-function renderClue(){
-  const c = game.cur;
-  $("c-cat").textContent = c.genre;
-  $("c-amt").textContent = c.dd ? "Double Win · " + money(c.wager) : money(c.value);
+function showClue(r){
+  const c = game.cur, cell = game.cells[c.i];
+  Object.assign(c, { phase: "ask", clip: r.clip, options: r.options });
+  $("c-cat").textContent = game.cats[cell.col];
+  $("c-amt").textContent = c.dd ? "Double Win · " + money(c.wager) : money(cell.value);
+  $("c-who").textContent = solo() ? "" : `${displayName(current())}'s turn`;
   $("deck").classList.remove("revealed", "spin");
   $("cover").removeAttribute("src");
   ring(0);
   $("p-title").textContent = "Name that track.";
-  $("p-sub").textContent = `${c.answer.d} · ${CONFIG.clipSecs[c.row]}-second clip`;
+  $("p-sub").textContent = (solo() ? "" : `${displayName(current())}'s turn · `) + `${r.decade} · ${r.clipSecs}-second clip`;
   $("tools").hidden = false;
-  $("fifty").disabled = !game.fifty;
+  $("fifty").disabled = !current().fifty;
   $("result").hidden = true;
-  $("answers").innerHTML = c.options.map((t, k) =>
-    `<button class="ans" data-k="${k}"><span class="L">${"ABCD"[k]}:</span><span class="T">${esc(t.t)}</span></button>`).join("");
+  $("answers").innerHTML = r.options.map((t, k) =>
+    `<button class="ans" data-k="${k}"><span class="L">${"ABCD"[k]}:</span><span class="T">${esc(t)}</span></button>`).join("");
+  $("clue").hidden = false;
+  playCurrent();
 }
-
-function playCurrent(){ const c = game.cur; playSpan(c.answer, c.start, c.end, true); }
+function playCurrent(){ const c = game.cur; if (c && c.clip) playSpan(c.clip.src, c.clip.start, c.clip.end, true); }
 
 async function choose(k){
   const c = game.cur;
@@ -756,131 +940,143 @@ async function choose(k){
   const btns = [...$("answers").children];
   $("tools").hidden = true; $("fifty").disabled = true;
   btns.forEach(b => b.disabled = true);
+  if (k != null) { btns[k].classList.add("lock"); SFX.play("lock"); }
 
-  /* "Final answer?" — a short lock-in beat before the reveal. */
-  if (k != null) { btns[k].classList.add("lock"); await sleep(1100); }
-
-  const right = k != null && c.options[k].k === c.answer.k;
-  const stake = c.dd ? c.wager : c.value;
-  const win = c.dd ? stake * 2 : stake;        // Double Win pays twice the wager
-  const delta = k == null ? 0 : (right ? win : -stake);
-  game.score += delta;
-  if (right) game.right++; else if (k != null) game.wrong++;
-  c.done = true;
-  c.outcome = k == null ? "skip" : (right ? "ok" : "no");
+  /* "Final answer?" — a lock-in beat while the server checks the answer. */
+  let r;
+  try { [r] = await Promise.all([game.engine.answer(k), sleep(k != null ? 1100 : 0)]); }
+  catch (err) {
+    c.phase = "ask"; btns.forEach(b => { b.disabled = b.classList.contains("gone"); b.classList.remove("lock"); });
+    $("tools").hidden = false; toast(err.message); return;
+  }
   c.phase = "reveal";
+  const cell = game.cells[c.i];
+  Object.assign(cell, { done: true, outcome: r.outcome, title: r.answer.t });
+  const who = game.players[r.by];
+  game.players = r.players; game.turn = r.turn;
 
   btns.forEach((b, j) => {
     b.classList.remove("lock");
-    if (c.options[j].k === c.answer.k) b.classList.add("right");
+    if (j === r.correct) b.classList.add("right");
     else if (j === k) b.classList.add("wrong");
     else b.classList.add("dim");
   });
-  updateBank(delta !== 0);
+  SFX.play(k == null ? "pass" : (r.right ? "right" : "wrong"));
+  renderPlayers(r.delta !== 0);
 
-  const a = c.answer;
+  const a = r.answer, name = solo() ? "" : `${displayName(who)}: `;
+  const won = r.dd ? r.stake * 2 : r.stake;
   if (a.c) { $("cover").src = a.c; $("deck").classList.add("revealed"); }
-  $("p-title").textContent = right ? "Correct!" : (k == null ? "Passed." : "Sorry, no.");
-  $("p-sub").textContent = right ? `+${money(win)}${c.dd ? " — Double Win!" : ""}` : (k == null ? "No change to your score." : `−${money(stake).replace("−", "")}`);
-  $("r-verdict").className = "verdict " + c.outcome;
-  $("r-verdict").textContent = right ? `Correct · +${money(win)}` : (k == null ? "Passed" : `Wrong · −${money(stake).replace("−", "")}`);
+  $("p-title").textContent = r.right ? "Correct!" : (k == null ? "Passed." : "Sorry, no.");
+  $("p-sub").textContent = r.right ? `${name}+${money(won)}${r.dd ? " — Double Win!" : ""}`
+    : (k == null ? `${name}no change` : `${name}−${money(r.stake).replace("−", "")}`);
+  $("r-verdict").className = "verdict " + r.outcome;
+  $("r-verdict").textContent = r.right ? `Correct · +${money(won)}` : (k == null ? "Passed" : `Wrong · −${money(r.stake).replace("−", "")}`);
   $("r-title").textContent = a.t;
   $("r-artist").textContent = `${a.a} · ${a.y}${a.r ? " · Year-end #" + a.r : ""}`;
-  $("back").textContent = game.cells.every(x => x.done) ? "See final score" : "Back to board";
+  game.finished = !!r.finished; game.ranks = r.ranks;
+  $("back").textContent = r.finished ? "See final scores" : (solo() ? "Back to board" : `Back to board — ${displayName(current())}'s pick`);
   $("result").hidden = false;
   $("back").focus({ preventScroll: true });
 
-  /* Let the record play on for a bit — the reward. */
-  if (audio.paused) playSpan(a, c.start, Math.min((a.s || 999) - 1, c.start + CONFIG.revealPlay), false);
-  else { clip.end = Math.min((a.s || 999) - 1, audio.currentTime + CONFIG.revealPlay); }
+  if (audio.paused) playSpan(c.clip.src, c.clip.start, c.clip.start + CONFIG.revealPlay, false);
+  else clip.end = audio.currentTime + CONFIG.revealPlay;
 }
 
-function fiftyFifty(){
-  const c = game.cur;
-  if (!game.fifty || !c || c.phase !== "ask") return;
-  game.fifty = false; $("fifty").disabled = true;
-  const wrong = shuffle(c.options.map((t, k) => k).filter(k => c.options[k].k !== c.answer.k)).slice(0, 2);
-  wrong.forEach(k => { const b = $("answers").children[k]; b.classList.add("gone"); b.disabled = true; });
+async function fiftyFifty(){
+  const c = game && game.cur;
+  if (!c || c.phase !== "ask" || !current().fifty) return;
+  c.phase = "busy";
+  try {
+    const r = await game.engine.fifty();
+    current().fifty = false; $("fifty").disabled = true; SFX.play("fifty");
+    r.remove.forEach(k => { const b = $("answers").children[k]; b.classList.add("gone"); b.disabled = true; });
+  } catch (err) { toast(err.message); }
+  c.phase = "ask";
 }
 
 function backToBoard(){
   stopAudio(300);
   $("clue").hidden = true;
   game.cur = null;
-  renderBoard();
-  if (game.cells.every(c => c.done)) finish();
+  renderBoard(); renderPlayers(false);
+  if (game.finished) finish();
+  else if (!solo()) SFX.play("turn");
 }
 
+/* ── end of board ────────────────────────────────────────── */
 function finish(){
+  SFX.play("end");
+  const online = game.engine.online, ranks = game.ranks || [];
+  const order = game.players.map((p, i) => ({ ...p, rank: ranks[i] })).sort((a, b) => b.score - a.score);
   const stats = store.get("stats2", { best: null, games: 0 });
-  const isBest = stats.best == null || game.score > stats.best;
-  if (isBest) stats.best = game.score;
   stats.games++;
+  if (solo()) {
+    const p = game.players[0], isBest = stats.best == null || p.score > stats.best;
+    if (isBest) stats.best = p.score;
+    $("end-score").textContent = money(p.score);
+    $("end-score").classList.toggle("neg", p.score < 0);
+    $("end-line").textContent = `${displayName(p)} · ${p.right} right · ${p.wrong} wrong · ${game.cells.length - p.right - p.wrong} passed`;
+    $("end-best").innerHTML = isBest && p.score > 0 ? `<span class="new-best">Your new best</span>`
+      : `<span class="line">Your best: ${money(stats.best)} · ${stats.games} boards played</span>`;
+    $("end-podium").hidden = true;
+  } else {
+    const w = order[0], tie = order[1] && order[1].score === w.score;
+    $("end-score").textContent = tie ? "It's a tie!" : `${displayName(w)} wins`;
+    $("end-score").classList.remove("neg");
+    $("end-line").textContent = `${game.players.length} players · ${game.cells.length} squares`;
+    $("end-best").innerHTML = "";
+    $("end-podium").hidden = false;
+    $("end-podium").innerHTML = order.map((p, i) => {
+      const rk = p.rank ? `#${p.rank.week} this week · #${p.rank.all} all time` : (online ? "" : "practice — not saved");
+      return `<li><span class="r">${i + 1}</span><span class="n">${esc(displayName(p))}<small>${p.right} right · ${esc(rk)}</small></span>` +
+        `<span class="s ${p.score < 0 ? "neg" : ""}">${money(p.score)}</span></li>`;
+    }).join("");
+  }
   store.set("stats2", stats);
-  $("end-score").textContent = money(game.score);
-  $("end-score").classList.toggle("neg", game.score < 0);
-  const n = game.cells.length;
-  $("end-line").textContent = `${player.name || "Guest"} · ${game.right} right · ${game.wrong} wrong · ${n - game.right - game.wrong} passed`;
-  $("end-best").innerHTML = isBest && game.score > 0 ? `<span class="new-best">Your new best</span>`
-    : `<span class="line">Your best: ${money(stats.best)} · ${stats.games} boards played</span>`;
-  game.share = `Name That Track: ${money(game.score)} (${game.right}/${n})\n` +
+  const me = solo() ? order[0] : null;
+  $("end-placed").innerHTML = !online ? `<span class="practice">Practice mode — not saved</span>`
+    : (me && me.rank ? `${esc(displayName(me))} placed #${me.rank.week} this week · #${me.rank.all} all time`
+       : (me && !me.name ? "Guest scores aren't saved — set a name to make the leaderboard" : ""));
+  $("end-lb").innerHTML = "";
+  if (solo() && online) loadScores("week").then(d => renderLb($("end-lb"), d, 5, me && me.name ? me : null));
+  game.share = `Name That Track: ` + order.map(p => `${displayName(p)} ${money(p.score)}`).join(" · ") + "\n" +
     CONFIG.values.map((_, row) => game.cells.filter(c => c.row === row).sort((a, b) => a.col - b.col)
       .map(c => c.outcome === "ok" ? "🟩" : c.outcome === "no" ? "🟥" : "⬛").join("")).join("\n") +
     "\nhttps://trivia.iatebreakfast.com";
-  game.submitted = false;
-  $("end-placed").textContent = ""; $("end-lb").innerHTML = "";
-  $("end-save").hidden = true;
   $("end").hidden = false;
-  if (player.name) submitScore(); else { $("end-save").hidden = false; loadScores().then(r => renderLb($("end-lb"), r, 5)); }
 }
 
-/* ── shared high scores ─────────────────────────────────── */
-async function loadScores(){
-  try {
-    const r = await fetch(CONFIG.scoresUrl, { cache: "no-store" });
-    if (!r.ok) throw 0;
-    return await r.json();
-  } catch { return null; }
-}
-async function submitScore(){
-  if (!game || game.submitted || !player.name) return;
-  game.submitted = true;
-  $("end-save").hidden = true;
-  $("end-placed").textContent = "Saving score…";
-  try {
-    const r = await fetch(CONFIG.scoresUrl, { method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: player.name, score: game.score, right: game.right, total: game.cells.length }) });
-    const data = await r.json().catch(() => ({}));
-    if (!r.ok) throw new Error(data.error || "HTTP " + r.status);
-    game.rank = data.rank;
-    $("end-placed").textContent = data.rank ? `${player.name} placed #${data.rank} of ${data.count}` : "Score saved";
-    renderLb($("end-lb"), data, 5, data.rank);
-  } catch (err) {
-    game.submitted = false;
-    $("end-placed").textContent = /slow/.test(err.message) ? "Saved too recently — try again in a few seconds" : "High scores are offline right now";
-    $("end-save").hidden = false;
-  }
-}
-function renderLb(el, data, limit, myRank){
+/* ══════════════════════════════════════════════════════════
+   HIGH SCORES (week / month / all time)
+   ══════════════════════════════════════════════════════════ */
+let lbPeriod = "week";
+async function loadScores(period){ try { return await api(`scores?period=${period}&limit=25`); } catch { return null; } }
+function renderLb(el, data, limit, me){
   if (!data) { el.innerHTML = `<li class="lb-empty" style="display:block">High scores are offline right now.</li>`; return; }
   const rows = (data.scores || []).slice(0, limit);
   if (!rows.length) { el.innerHTML = `<li class="lb-empty" style="display:block">No scores yet — be the first.</li>`; return; }
   el.innerHTML = rows.map((r, i) => {
-    const when = r.at ? new Date(r.at).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }) : "";
+    const when = r.at ? new Date(r.at).toLocaleDateString(undefined, { month: "short", day: "numeric" }) : "";
     const detail = [r.total ? `${r.right}/${r.total} right` : "", when].filter(Boolean).join(" · ");
-    return `<li class="${myRank === i + 1 ? "me" : ""}"><span class="r">${i + 1}</span>
-      <span class="n">${esc(r.name)}<small>${esc(detail)}</small></span>
+    const mine = me && r.name === me.name && r.score === me.score;
+    return `<li class="${mine ? "me" : ""}"><span class="r">${i + 1}</span>
+      <span class="n">${esc(r.name)}${r.players > 1 ? `<span class="tag">${r.players}P</span>` : ""}<small>${esc(detail)}</small></span>
       <span class="s ${r.score < 0 ? "neg" : ""}">${money(r.score)}</span></li>`;
   }).join("");
 }
-async function openScores(){
+async function openScores(period = lbPeriod){
+  lbPeriod = period;
+  [...$("lb-tabs").children].forEach(b => b.setAttribute("aria-selected", String(b.dataset.p === period)));
   $("lb-list").innerHTML = `<li class="lb-empty" style="display:block">Loading…</li>`;
   $("lbsheet").hidden = false;
-  renderLb($("lb-list"), await loadScores(), 25, game && game.rank);
+  renderLb($("lb-list"), await loadScores(period), 25);
 }
 
-/* ── player name: on-screen keyboard ────────────────────── */
-const player = { name: store.get("name", ""), draft: "", after: null };
+/* ══════════════════════════════════════════════════════════
+   PLAYERS: setup sheet + on-screen keyboard
+   ══════════════════════════════════════════════════════════ */
+const setup = { names: [], editing: -1, draft: "" };
 const KBD_ROWS = ["1234567890", "QWERTYUIOP", "ASDFGHJKL", "ZXCVBNM"];
 function buildKeyboard(){
   let h = "";
@@ -893,73 +1089,116 @@ function buildKeyboard(){
         <button class="go sp4" data-k="ok" id="kbd-ok">OK</button>`;
   $("kbd").innerHTML = h;
 }
+
+function openSetup(){
+  setup.names = (party.names && party.names.length ? party.names : [""]).slice(0, CONFIG.maxPlayers);
+  $("setup-cancel").hidden = !game;
+  renderSetup();
+  $("setup").hidden = false;
+}
+function renderSetup(){
+  const n = setup.names.length;
+  [...$("pcount").children].forEach(b => b.setAttribute("aria-pressed", String(+b.dataset.n === n)));
+  $("slots").innerHTML = setup.names.map((nm, i) =>
+    `<button class="slot" data-i="${i}"><span class="sl">Player ${i + 1}</span>` +
+    `<span class="sn ${nm ? "" : "empty"}">${nm ? esc(nm) : (n === 1 ? "Tap to add your name" : "Tap to add a name")}</span>` +
+    `<span class="edit">${nm ? "Edit" : ""}</span></button>`).join("");
+  const missing = setup.names.some(x => !x);
+  $("setup-note").textContent = n === 1
+    ? (missing ? "No name? You can play as a guest, but guest scores don't go on the leaderboard." : "Your score goes on the shared leaderboard when you finish the board.")
+    : "Pass the device around: players take turns picking squares. Everyone's score is saved when the board is finished.";
+  $("setup-go").disabled = n > 1 && missing;
+  $("setup-go").textContent = n === 1 && missing ? "Play as guest" : "Start the board";
+}
+function setCount(n){
+  SFX.play("tap");
+  setup.names = Array.from({ length: n }, (_, i) => setup.names[i] || "");
+  renderSetup();
+}
+function editSlot(i){
+  setup.editing = i; setup.draft = setup.names[i] || "";
+  $("who-title").textContent = setup.names.length === 1 ? "What's your name?" : `Player ${i + 1}'s name`;
+  renderName(); $("who").hidden = false;
+}
 function renderName(){
-  const d = player.draft;
+  const d = setup.draft;
   $("name-display").innerHTML = (d ? esc(d).replace(/ /g, "&nbsp;") : `<span class="ph">Tap letters below</span>`) +
     (d.length < CONFIG.nameMax ? `<i class="caret"></i>` : "");
   $("kbd-ok").disabled = !d.trim();
 }
-function openName(after){
-  player.draft = player.name; player.after = after || null;
-  renderName(); $("who").hidden = false;
-}
 function nameKey(k){
   if ($("who").hidden) return;
-  if (k === "del") player.draft = player.draft.slice(0, -1);
-  else if (k === "clr") player.draft = "";
+  SFX.play("tap");
+  if (k === "del") setup.draft = setup.draft.slice(0, -1);
+  else if (k === "clr") setup.draft = "";
   else if (k === "ok") {
-    const v = player.draft.replace(/\s+/g, " ").trim().toUpperCase();
+    const v = setup.draft.replace(/\s+/g, " ").trim().toUpperCase();
     if (!v) return;
-    setPlayer(v); $("who").hidden = true;
-    const f = player.after; player.after = null; if (f) f();
+    if (setup.names.some((x, j) => j !== setup.editing && x === v)) { toast("Two players can't share a name"); return; }
+    setup.names[setup.editing] = v; $("who").hidden = true; renderSetup();
     return;
-  } else if (player.draft.length < CONFIG.nameMax && !(k === " " && (!player.draft || player.draft.endsWith(" ")))) {
-    player.draft += k;
+  } else if (setup.draft.length < CONFIG.nameMax && !(k === " " && (!setup.draft || setup.draft.endsWith(" ")))) {
+    setup.draft += k;
   }
   renderName();
 }
-function setPlayer(name){
-  player.name = name; store.set("name", name);
-  $("player-name").textContent = name || "Guest";
+function confirmSetup(){
+  const names = setup.names.map(x => x.trim());
+  if (names.length > 1 && names.some(x => !x)) return;
+  party.names = names;
+  store.set("players", names);
+  if (names.length === 1) store.set("name", names[0]);
+  $("setup").hidden = true;
+  startGame(names);
 }
 
+/* ══════════════════════════════════════════════════════════
+   WIRING
+   ══════════════════════════════════════════════════════════ */
 let toastT;
 function toast(msg){
   const t = $("toast"); t.textContent = msg; t.classList.add("show");
-  clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove("show"), 2200);
+  clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove("show"), 2600);
 }
 
-/* ── wiring ─────────────────────────────────────────────── */
 $("board").addEventListener("click", e => {
   const b = e.target.closest(".cell"); if (!b || b.disabled || !game) return;
-  openCell(game.cells[+b.dataset.i]);
+  openCell(+b.dataset.i);
 });
 $("numpad").addEventListener("click", e => { const b = e.target.closest("button"); if (b) wagerKey(b.dataset.n); });
-$("kbd").addEventListener("click", e => { const b = e.target.closest("button"); if (b && !b.disabled) nameKey(b.dataset.k); });
-$("name-guest").addEventListener("click", () => { $("who").hidden = true; setPlayer(""); const f = player.after; player.after = null; if (f) f(); });
-$("player").addEventListener("click", () => openName());
-$("scores-btn").addEventListener("click", openScores);
-$("lb-close").addEventListener("click", () => { $("lbsheet").hidden = true; });
-$("end-save").addEventListener("click", () => player.name ? submitScore() : openName(submitScore));
 $("answers").addEventListener("click", e => { const b = e.target.closest(".ans"); if (b && !b.disabled) choose(+b.dataset.k); });
 $("deck-play").addEventListener("click", () => { if (game && game.cur && game.cur.phase === "ask") playCurrent(); });
 $("replay").addEventListener("click", () => { if (game && game.cur && game.cur.phase === "ask") playCurrent(); });
 $("pass").addEventListener("click", () => choose(null));
 $("fifty").addEventListener("click", fiftyFifty);
 $("back").addEventListener("click", backToBoard);
-$("again").addEventListener("click", newBoard);
+$("again").addEventListener("click", () => startGame(party.names));
 $("newgame").addEventListener("click", () => {
-  if (!game) return;
+  if (!game || game.cur) return;
   const started = game.cells.some(c => c.done);
-  if (started && !game.cells.every(c => c.done) && !confirmNew()) return;
-  newBoard();
+  if (started && !game.finished && !confirmNew()) return;
+  startGame(party.names);
 });
 let confirmT = 0;
 function confirmNew(){
-  /* Two taps within 3s instead of a blocking dialog. */
   if (Date.now() - confirmT < 3000) return true;
   confirmT = Date.now(); toast("Tap again to abandon this board"); return false;
 }
+$("player").addEventListener("click", () => { if (!game || !game.cur) openSetup(); });
+$("pcount").addEventListener("click", e => { const b = e.target.closest("button"); if (b) setCount(+b.dataset.n); });
+$("slots").addEventListener("click", e => { const b = e.target.closest(".slot"); if (b) editSlot(+b.dataset.i); });
+$("setup-go").addEventListener("click", confirmSetup);
+$("setup-cancel").addEventListener("click", () => { $("setup").hidden = true; });
+$("kbd").addEventListener("click", e => { const b = e.target.closest("button"); if (b && !b.disabled) nameKey(b.dataset.k); });
+$("name-cancel").addEventListener("click", () => { $("who").hidden = true; });
+$("scores-btn").addEventListener("click", () => openScores());
+$("lb-tabs").addEventListener("click", e => { const b = e.target.closest("button"); if (b) openScores(b.dataset.p); });
+$("lb-close").addEventListener("click", () => { $("lbsheet").hidden = true; });
+$("sound").addEventListener("click", () => {
+  SFX.on = !SFX.on; $("sound").setAttribute("aria-pressed", String(SFX.on));
+  if (SFX.on) SFX.play("tap");
+});
+$("sound").setAttribute("aria-pressed", String(SFX.on));
 $("share").addEventListener("click", async () => {
   if (!game || !game.share) return;
   try {
@@ -967,6 +1206,9 @@ $("share").addEventListener("click", async () => {
     else { await navigator.clipboard.writeText(game.share); toast("Result copied"); }
   } catch {}
 });
+/* Browsers only allow sound after a tap; wake the synth on the first one. */
+addEventListener("pointerdown", () => SFX.unlock(), { once: true, capture: true });
+
 document.addEventListener("keydown", e => {
   if (e.metaKey || e.ctrlKey || e.altKey) return;
   if (!$("who").hidden) {
@@ -974,8 +1216,10 @@ document.addEventListener("keydown", e => {
     if (/^[A-Z0-9 ]$/.test(k)) { e.preventDefault(); nameKey(k); }
     else if (k === "Backspace") { e.preventDefault(); nameKey("del"); }
     else if (k === "Enter") { e.preventDefault(); nameKey("ok"); }
+    else if (k === "Escape") $("who").hidden = true;
     return;
   }
+  if (!$("setup").hidden) { if (e.key === "Enter") confirmSetup(); return; }
   if (!$("lbsheet").hidden) { if (e.key === "Escape" || e.key === "Enter") $("lbsheet").hidden = true; return; }
   if (!$("dd").hidden) {
     if (/^\d$/.test(e.key)) wagerKey(e.key);
@@ -1007,9 +1251,9 @@ function fitDeck(){
 addEventListener("resize", fitDeck); fitDeck();
 
 buildKeyboard();
-setPlayer(player.name);
-if (!player.name) openName();
-load();
+$("notice").innerHTML = `<div><b>Name That Track</b>Pick who's playing to deal a board.</div>`;
+if (party.names && party.names.length) startGame(party.names);
+else openSetup();
 </script>
 </body>
 </html>
