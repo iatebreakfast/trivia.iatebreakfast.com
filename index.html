@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0c0c0c">
-<meta name="description" content="Name That Hit — a Jeopardy-style board of Billboard year-end hits. Pick a genre and a price, hear the clip, name the song.">
+<meta name="description" content="Name That Track — a Jeopardy-style board of Billboard year-end hits. Pick a genre and a price, hear the clip, name the song.">
 <title>American Billboard Trivia</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 210 210'%3E%3Ccircle cx='105' cy='105' r='101' fill='%23e50914'/%3E%3Ccircle cx='105' cy='105' r='32' fill='%23ede0c4'/%3E%3Ccircle cx='105' cy='105' r='8' fill='%231c1c1c'/%3E%3C/svg%3E">
 <style>
@@ -85,6 +85,7 @@ button{font-family:inherit;color:inherit}
   border:1px solid color-mix(in srgb,var(--accent) 35%,transparent);
   font:800 clamp(10px,1.35vw,15px)/1.15 var(--sans);letter-spacing:.02em;text-transform:uppercase;
   color:#fff;text-wrap:balance;overflow:hidden}
+.cat .short{display:none}
 .cell{border:1px solid var(--line);border-radius:9px;cursor:pointer;
   background:radial-gradient(120% 140% at 50% 0%,rgba(255,255,255,.07),transparent 60%),#1c1c1c;
   display:grid;place-items:center;transition:transform .14s,background .2s,border-color .2s;position:relative}
@@ -181,17 +182,70 @@ button{font-family:inherit;color:inherit}
   color:#fff;background:var(--accent);box-shadow:0 10px 24px -10px var(--glow);transition:filter .15s}
 .primary:hover{filter:brightness(1.12)}
 
-/* Daily Double splash */
-.dd{position:absolute;inset:0;z-index:6;display:grid;place-items:center;text-align:center;padding:20px;
-  background:radial-gradient(70% 60% at 50% 45%,color-mix(in srgb,var(--accent) 45%,transparent),transparent 75%),var(--panel)}
-.dd h2{margin:0;font:900 clamp(40px,9vw,96px)/.95 var(--sans);letter-spacing:-.04em;color:var(--cream);
+/* Double Win splash + wager pad */
+.dd{position:absolute;inset:0;z-index:6;display:grid;place-items:center;text-align:center;padding:16px;overflow:auto;
+  background:radial-gradient(70% 60% at 50% 40%,color-mix(in srgb,var(--accent) 45%,transparent),transparent 75%),var(--panel)}
+.dd h2{margin:0;font:900 clamp(34px,7vw,76px)/.95 var(--sans);letter-spacing:-.04em;color:var(--cream);
   text-shadow:0 6px 0 rgba(0,0,0,.45);animation:ddin .6s cubic-bezier(.2,1.4,.3,1)}
 @keyframes ddin{from{transform:scale(.3) rotate(-8deg);opacity:0}}
-.dd p{margin:14px 0 18px;color:var(--ink-dim);font-size:14px}
-.wagers{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
-.wagers button{border:1px solid var(--line-2);background:#1b1b1b;border-radius:10px;padding:12px 16px;cursor:pointer;
-  font:800 16px/1 var(--mono);color:var(--cream);transition:.15s}
-.wagers button:hover{border-color:var(--accent);background:#241416}
+.dd p{margin:10px 0 12px;color:var(--ink-dim);font-size:13.5px;line-height:1.45}
+.dd p b{color:var(--cream)}
+.wager-display{font:850 clamp(30px,5vw,44px)/1 var(--mono);color:#fff;letter-spacing:-.03em;font-variant-numeric:tabular-nums;
+  padding:10px 16px;border-radius:12px;background:rgba(0,0,0,.45);border:1px solid var(--line-2);min-width:220px;margin:0 auto 6px}
+.wager-display.bad{border-color:var(--bad);color:var(--bad)}
+.wager-hint{font:600 11px/1.3 var(--mono);color:var(--ink-faint);margin:0 0 10px;min-height:14px}
+
+/* On-screen keypads (wager numpad and name keyboard) */
+.pad{display:grid;gap:6px;margin:0 auto}
+.numpad{grid-template-columns:repeat(3,64px)}
+.pad button{height:48px;border-radius:10px;border:1px solid var(--line-2);background:#1d1d1d;color:var(--ink);cursor:pointer;
+  font:800 18px/1 var(--mono);transition:background .12s,transform .06s;touch-action:manipulation;-webkit-user-select:none;user-select:none}
+.pad button:hover{background:#262626}
+.pad button:active{transform:scale(.95);background:#2e2e2e}
+.pad button.fn{color:var(--ink-dim);font-size:14px}
+.pad button.go{background:var(--accent);border-color:var(--accent);color:#fff;font:750 14px/1 var(--sans)}
+.pad button.go:disabled{opacity:.4;cursor:default}
+.kbd{grid-template-columns:repeat(10,minmax(0,44px))}
+.kbd button{font-size:16px}
+.kbd .sp2{grid-column:span 2}.kbd .sp3{grid-column:span 3}.kbd .sp4{grid-column:span 4}
+
+/* Sheets: name entry and high scores */
+.sheet{position:absolute;inset:0;z-index:8;display:grid;place-items:center;padding:16px;overflow:auto;text-align:center;
+  background:radial-gradient(80% 55% at 50% 20%,color-mix(in srgb,var(--accent) 26%,transparent),transparent 75%),rgba(14,14,14,.97)}
+.sheet-in{width:100%;max-width:520px}
+.sheet .eyebrow{font:650 11px/1 var(--mono);letter-spacing:.13em;text-transform:uppercase;color:var(--ink-dim);margin:0 0 10px}
+.sheet h2{margin:0 0 12px;font-size:clamp(24px,4vw,34px);font-weight:820;letter-spacing:-.03em}
+.name-display{display:flex;align-items:center;justify-content:center;gap:2px;height:58px;margin:0 auto 14px;max-width:360px;
+  border-radius:12px;background:rgba(0,0,0,.45);border:1px solid var(--line-2);
+  font:850 28px/1 var(--mono);letter-spacing:.12em;color:var(--cream)}
+.name-display .ph{color:var(--ink-faint);font-size:16px;letter-spacing:.06em;font-weight:650}
+.name-display .caret{width:3px;height:30px;background:var(--accent);animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+.sheet .row{display:flex;gap:10px;justify-content:center;margin-top:14px;flex-wrap:wrap}
+.lb{list-style:none;margin:0 auto;padding:0;max-width:440px;text-align:left;counter-reset:r}
+.lb li{display:grid;grid-template-columns:34px minmax(0,1fr) auto;gap:10px;align-items:center;padding:8px 12px;border-radius:9px;
+  font-size:14px}
+.lb li:nth-child(odd){background:var(--elev)}
+.lb li .r{font:800 13px/1 var(--mono);color:var(--ink-faint);text-align:right}
+.lb li:nth-child(1) .r{color:#f5c84b}.lb li:nth-child(2) .r{color:#cfd3d6}.lb li:nth-child(3) .r{color:#d39a64}
+.lb li .n{font:800 14px/1.2 var(--mono);letter-spacing:.06em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lb li .n small{display:block;font:600 10.5px/1.3 var(--sans);letter-spacing:0;color:var(--ink-faint);margin-top:2px}
+.lb li .s{font:800 15px/1 var(--mono);color:var(--cream);font-variant-numeric:tabular-nums}
+.lb li .s.neg{color:var(--bad)}
+.lb li.me{outline:1.5px solid var(--accent);background:var(--tint)}
+.lb-empty{color:var(--ink-faint);font-size:13.5px;padding:18px 0}
+.lb-scroll{max-height:min(52vh,460px);overflow:auto;margin:0 -4px;padding:0 4px}
+.end .lb{margin-top:14px;width:min(420px,100%)}
+.end .lb li{padding:6px 10px;font-size:13px}
+.end .placed{font:750 13px/1 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--accent-ink);margin-top:10px}
+
+/* player chip + scores button in the top bar */
+.chip-btn{height:34px;border-radius:9px;border:1px solid var(--line);background:var(--elev);color:var(--ink);cursor:pointer;
+  display:inline-flex;align-items:center;gap:7px;padding:0 10px;font:750 12px/1 var(--mono);letter-spacing:.06em;
+  max-width:150px;transition:.16s}
+.chip-btn:hover{border-color:var(--line-2)}
+.chip-btn span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.chip-btn svg{width:15px;height:15px;flex:0 0 auto;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;color:var(--ink-dim)}
 
 /* End of round */
 .end{position:absolute;inset:0;z-index:7;display:flex;flex-direction:column;align-items:center;justify-content:center;
@@ -231,7 +285,8 @@ button{font-family:inherit;color:inherit}
   .icon-btn span{display:none}
   .stage{border-radius:0}
   .board{grid-template-rows:minmax(44px,.75fr) repeat(5,minmax(0,1fr))}
-  .cat{font-size:9px;letter-spacing:0;padding:3px 2px;border-radius:6px;hyphens:auto;word-break:break-word}
+  .cat{font-size:9px;letter-spacing:0;padding:3px 2px;border-radius:6px}
+  .cat .full{display:none} .cat .short{display:inline}
   .cell{border-radius:6px}
   .cell .amt{font-size:clamp(13px,4.2vw,20px)}
   .cell .res{font-size:8px;padding:2px}
@@ -245,7 +300,16 @@ button{font-family:inherit;color:inherit}
   .foot{padding:6px 10px 4px}
   .foot .keys{display:none}
   .foot p{font-size:10px}
+  .chip-btn{max-width:96px;padding:0 8px}
+  .chip-btn.lbtn span{display:none}
+  .kbd{gap:4px;grid-template-columns:repeat(10,minmax(0,1fr))}
+  .kbd button{height:44px;font-size:15px;border-radius:7px}
+  .numpad{grid-template-columns:repeat(3,72px)}
+  .pad button{height:46px}
+  .name-display{height:50px;font-size:24px}
 }
+@media (max-width:440px){ .brand-name{display:none} }
+@media (max-height:640px){ .pad button{height:40px} .numpad button{height:42px} .dd p{margin:6px 0 8px} }
 @media (max-height:700px) and (max-width:760px){ .prompt p{display:none} }
 @media (prefers-reduced-motion:reduce){ *{transition:none !important;animation:none !important} }
 </style>
@@ -264,7 +328,7 @@ button{font-family:inherit;color:inherit}
         <circle cx="105" cy="105" r="8" fill="#1c1c1c"/>
       </svg>
     </span>
-    <span class="brand-name">Name That Hit<small>American Billboard Trivia</small></span>
+    <span class="brand-name">Name That Track<small>American Billboard Trivia</small></span>
   </a>
   <nav class="sister" aria-label="Sister sites">
     <a href="https://radio.iatebreakfast.com">Radio</a>
@@ -272,6 +336,12 @@ button{font-family:inherit;color:inherit}
     <a href="https://music.iatebreakfast.com">Archive</a>
   </nav>
   <div class="hud">
+    <button class="chip-btn" id="player" title="Change player">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span id="player-name">Player</span>
+    </button>
+    <button class="chip-btn lbtn" id="scores-btn" title="High scores">
+      <svg viewBox="0 0 24 24"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/></svg><span>Scores</span>
+    </button>
     <div class="bank" id="bank" aria-live="polite">$0</div>
     <button class="icon-btn" id="newgame" title="New board">
       <svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg><span>New board</span>
@@ -283,12 +353,20 @@ button{font-family:inherit;color:inherit}
   <div class="board" id="board" role="grid" aria-label="Game board"></div>
   <div class="notice" id="notice"><div><b>Loading the library…</b>Fetching 6,000+ chart records</div></div>
 
-  <!-- Daily Double -->
+  <!-- Double Win: secret tile, wager entered on the number pad -->
   <section class="dd" id="dd" hidden>
     <div>
-      <h2>DAILY<br>DOUBLE</h2>
+      <h2>DOUBLE<br>WIN</h2>
       <p id="dd-sub">Make your wager</p>
-      <div class="wagers" id="wagers"></div>
+      <div class="wager-display" id="wager-display">$0</div>
+      <p class="wager-hint" id="wager-hint"></p>
+      <div class="pad numpad" id="numpad">
+        <button data-n="1">1</button><button data-n="2">2</button><button data-n="3">3</button>
+        <button data-n="4">4</button><button data-n="5">5</button><button data-n="6">6</button>
+        <button data-n="7">7</button><button data-n="8">8</button><button data-n="9">9</button>
+        <button class="fn" data-n="max">MAX</button><button data-n="0">0</button><button class="fn" data-n="del" aria-label="Delete">⌫</button>
+        <button class="go" data-n="ok" id="wager-ok" style="grid-column:span 3">Lock in wager</button>
+      </div>
     </div>
   </section>
 
@@ -315,7 +393,7 @@ button{font-family:inherit;color:inherit}
             <circle cx="105" cy="105" r="38" fill="var(--accent)"/>
             <circle cx="105" cy="105" r="38" fill="none" stroke="#ede0c4" stroke-width="1.5" opacity=".5"/>
             <text x="105" y="96" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="8" font-weight="700" fill="#ede0c4" letter-spacing="1.5">NAME THAT</text>
-            <text x="105" y="124" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="8" font-weight="700" fill="#ede0c4" letter-spacing="1.5">HIT</text>
+            <text x="105" y="124" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="8" font-weight="700" fill="#ede0c4" letter-spacing="1.5">TRACK</text>
             <circle cx="105" cy="105" r="5" fill="#141212"/>
           </svg>
           <img class="cover" id="cover" alt="">
@@ -323,7 +401,7 @@ button{font-family:inherit;color:inherit}
         <button class="deck-btn" id="deck-play" aria-label="Play clip"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></button>
       </div>
       <div class="prompt">
-        <h2 id="p-title">Name that hit.</h2>
+        <h2 id="p-title">Name that track.</h2>
         <p id="p-sub">Listen, then pick your answer.</p>
         <div class="tools" id="tools">
           <button class="ghost" id="replay"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>Replay</button>
@@ -348,9 +426,34 @@ button{font-family:inherit;color:inherit}
     <div class="big" id="end-score">$0</div>
     <div class="line" id="end-line"></div>
     <div id="end-best"></div>
+    <div class="placed" id="end-placed"></div>
+    <ol class="lb" id="end-lb"></ol>
     <div class="row">
+      <button class="ghost" id="end-save" hidden>Save to high scores</button>
       <button class="primary" id="again">Play a new board</button>
       <button class="ghost" id="share"><svg viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/></svg>Copy result</button>
+    </div>
+  </section>
+  <!-- Player name: on-screen keyboard -->
+  <section class="sheet" id="who" hidden>
+    <div class="sheet-in">
+      <p class="eyebrow">Name That Track</p>
+      <h2>Who's playing?</h2>
+      <div class="name-display" id="name-display"></div>
+      <div class="pad kbd" id="kbd"></div>
+      <div class="row">
+        <button class="ghost" id="name-guest">Play as guest</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- High scores -->
+  <section class="sheet" id="lbsheet" hidden>
+    <div class="sheet-in">
+      <p class="eyebrow">Everyone, all time</p>
+      <h2>High scores</h2>
+      <div class="lb-scroll"><ol class="lb" id="lb-list"></ol></div>
+      <div class="row"><button class="primary" id="lb-close">Back to the game</button></div>
     </div>
   </section>
 </main>
@@ -370,6 +473,9 @@ button{font-family:inherit;color:inherit}
 const CONFIG = {
   libraryUrl: "https://audio.iatebreakfast.com/library.json",
   genresUrl:  "genres.json",            // artist → genre, from Last.fm tags (same folder)
+  scoresUrl:  "api/scores",             // shared high scores (server/scores.py behind nginx)
+  nameMax:    12,
+  wagerMin:   5,
   columns:    6,
   values:     [200, 400, 600, 800, 1000],
   // Row difficulty: which year-end ranks a row draws from, and how long its clip is.
@@ -393,6 +499,10 @@ const norm = s => String(s || "").toLowerCase()
 const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.random() * (i + 1) | 0; [a[i], a[j]] = [a[j], a[i]]; } return a; };
 const pick = a => a[Math.random() * a.length | 0];
 const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+/* Phone-width column headers for the long genre names. */
+const SHORT = { "Dance & Electronic": "Dance", "Rock 'n' Roll & Doo-Wop": "Rock 'n' Roll", "Soft Rock & Folk": "Soft Rock",
+  "Crooners & Swing": "Crooners", "Funk & Disco": "Funk & Disco", "Soul & R&B": "Soul & R&B" };
 
 /* ── state ──────────────────────────────────────────────── */
 let ALL = [];            // every track
@@ -506,7 +616,7 @@ function newBoard(){
       cells.push(c);
     });
   });
-  /* One Daily Double, never in the $200 row. */
+  /* One secret Double Win tile, never in the $200 row. */
   const ddPool = cells.filter(c => c.row > 0);
   pick(ddPool).dd = true;
   game = { cats, cells, used, score: 0, right: 0, wrong: 0, fifty: true, cur: null };
@@ -556,7 +666,8 @@ function makeOptions(answer, row){
 function renderBoard(){
   const b = $("board");
   b.style.setProperty("--cols", game.cats.length);
-  let html = game.cats.map(g => `<div class="cat" role="columnheader">${esc(g.name)}</div>`).join("");
+  let html = game.cats.map(g => `<div class="cat" role="columnheader"><span class="full">${esc(g.name)}</span>` +
+    `<span class="short">${esc(SHORT[g.name] || g.name)}</span></div>`).join("");
   for (let row = 0; row < CONFIG.values.length; row++) {
     for (let col = 0; col < game.cats.length; col++) {
       const c = game.cells.find(x => x.col === col && x.row === row);
@@ -585,13 +696,32 @@ function openCell(c){
   showClue();
 }
 
+/* Double Win: wager on the number pad. Right pays twice the wager; wrong loses it. */
+function wagerMax(){ return Math.max(game.score, 1000); }
 function showDailyDouble(c){
-  const max = Math.max(game.score, 1000);
-  const opts = [...new Set([5, Math.round(max / 4 / 100) * 100 || 200, Math.round(max / 2 / 100) * 100 || 500, max])]
-    .filter(v => v >= 5 && v <= max).sort((a, b) => a - b);
-  $("dd-sub").textContent = `${c.genre} · wager up to ${money(max)}`;
-  $("wagers").innerHTML = opts.map(v => `<button data-w="${v}">${v === max ? "All in · " : ""}${money(v)}</button>`).join("");
+  c.wagerStr = "";
+  $("dd-sub").innerHTML = `${esc(c.genre)} · a right answer pays <b>double</b> your wager, a wrong one loses it.`;
+  renderWager();
   $("dd").hidden = false;
+}
+function renderWager(){
+  const c = game.cur, max = wagerMax(), v = +(c.wagerStr || 0);
+  const ok = v >= CONFIG.wagerMin && v <= max;
+  $("wager-display").textContent = money(v);
+  $("wager-display").classList.toggle("bad", v > max);
+  $("wager-hint").textContent = v > max ? `Too high — your max is ${money(max)}` : `Wager ${money(CONFIG.wagerMin)} – ${money(max)}`;
+  $("wager-ok").disabled = !ok;
+}
+function wagerKey(n){
+  const c = game.cur; if (!c || $("dd").hidden) return;
+  if (n === "del") c.wagerStr = c.wagerStr.slice(0, -1);
+  else if (n === "max") c.wagerStr = String(wagerMax());
+  else if (n === "ok") {
+    const v = +(c.wagerStr || 0);
+    if (v >= CONFIG.wagerMin && v <= wagerMax()) { c.wager = v; showClue(); }
+    return;
+  } else if (/^\d$/.test(n) && c.wagerStr.length < 6) c.wagerStr = (c.wagerStr + n).replace(/^0+/, "");
+  renderWager();
 }
 
 function showClue(){
@@ -604,11 +734,11 @@ function showClue(){
 function renderClue(){
   const c = game.cur;
   $("c-cat").textContent = c.genre;
-  $("c-amt").textContent = c.dd ? "Daily Double · " + money(c.wager) : money(c.value);
+  $("c-amt").textContent = c.dd ? "Double Win · " + money(c.wager) : money(c.value);
   $("deck").classList.remove("revealed", "spin");
   $("cover").removeAttribute("src");
   ring(0);
-  $("p-title").textContent = "Name that hit.";
+  $("p-title").textContent = "Name that track.";
   $("p-sub").textContent = `${c.answer.d} · ${CONFIG.clipSecs[c.row]}-second clip`;
   $("tools").hidden = false;
   $("fifty").disabled = !game.fifty;
@@ -632,7 +762,8 @@ async function choose(k){
 
   const right = k != null && c.options[k].k === c.answer.k;
   const stake = c.dd ? c.wager : c.value;
-  const delta = k == null ? 0 : (right ? stake : -stake);
+  const win = c.dd ? stake * 2 : stake;        // Double Win pays twice the wager
+  const delta = k == null ? 0 : (right ? win : -stake);
   game.score += delta;
   if (right) game.right++; else if (k != null) game.wrong++;
   c.done = true;
@@ -650,9 +781,9 @@ async function choose(k){
   const a = c.answer;
   if (a.c) { $("cover").src = a.c; $("deck").classList.add("revealed"); }
   $("p-title").textContent = right ? "Correct!" : (k == null ? "Passed." : "Sorry, no.");
-  $("p-sub").textContent = right ? `+${money(stake)}` : (k == null ? "No change to your score." : `−${money(stake).replace("−", "")}`);
+  $("p-sub").textContent = right ? `+${money(win)}${c.dd ? " — Double Win!" : ""}` : (k == null ? "No change to your score." : `−${money(stake).replace("−", "")}`);
   $("r-verdict").className = "verdict " + c.outcome;
-  $("r-verdict").textContent = right ? `Correct · +${money(stake)}` : (k == null ? "Passed" : `Wrong · −${money(stake).replace("−", "")}`);
+  $("r-verdict").textContent = right ? `Correct · +${money(win)}` : (k == null ? "Passed" : `Wrong · −${money(stake).replace("−", "")}`);
   $("r-title").textContent = a.t;
   $("r-artist").textContent = `${a.a} · ${a.y}${a.r ? " · Year-end #" + a.r : ""}`;
   $("back").textContent = game.cells.every(x => x.done) ? "See final score" : "Back to board";
@@ -689,14 +820,107 @@ function finish(){
   $("end-score").textContent = money(game.score);
   $("end-score").classList.toggle("neg", game.score < 0);
   const n = game.cells.length;
-  $("end-line").textContent = `${game.right} right · ${game.wrong} wrong · ${n - game.right - game.wrong} passed`;
-  $("end-best").innerHTML = isBest && game.score > 0 ? `<span class="new-best">New best</span>`
-    : `<span class="line">Best: ${money(stats.best)} · ${stats.games} boards played</span>`;
-  game.share = `Name That Hit: ${money(game.score)} (${game.right}/${n})\n` +
+  $("end-line").textContent = `${player.name || "Guest"} · ${game.right} right · ${game.wrong} wrong · ${n - game.right - game.wrong} passed`;
+  $("end-best").innerHTML = isBest && game.score > 0 ? `<span class="new-best">Your new best</span>`
+    : `<span class="line">Your best: ${money(stats.best)} · ${stats.games} boards played</span>`;
+  game.share = `Name That Track: ${money(game.score)} (${game.right}/${n})\n` +
     CONFIG.values.map((_, row) => game.cells.filter(c => c.row === row).sort((a, b) => a.col - b.col)
       .map(c => c.outcome === "ok" ? "🟩" : c.outcome === "no" ? "🟥" : "⬛").join("")).join("\n") +
     "\nhttps://trivia.iatebreakfast.com";
+  game.submitted = false;
+  $("end-placed").textContent = ""; $("end-lb").innerHTML = "";
+  $("end-save").hidden = true;
   $("end").hidden = false;
+  if (player.name) submitScore(); else { $("end-save").hidden = false; loadScores().then(r => renderLb($("end-lb"), r, 5)); }
+}
+
+/* ── shared high scores ─────────────────────────────────── */
+async function loadScores(){
+  try {
+    const r = await fetch(CONFIG.scoresUrl, { cache: "no-store" });
+    if (!r.ok) throw 0;
+    return await r.json();
+  } catch { return null; }
+}
+async function submitScore(){
+  if (!game || game.submitted || !player.name) return;
+  game.submitted = true;
+  $("end-save").hidden = true;
+  $("end-placed").textContent = "Saving score…";
+  try {
+    const r = await fetch(CONFIG.scoresUrl, { method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: player.name, score: game.score, right: game.right, total: game.cells.length }) });
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(data.error || "HTTP " + r.status);
+    game.rank = data.rank;
+    $("end-placed").textContent = data.rank ? `${player.name} placed #${data.rank} of ${data.count}` : "Score saved";
+    renderLb($("end-lb"), data, 5, data.rank);
+  } catch (err) {
+    game.submitted = false;
+    $("end-placed").textContent = /slow/.test(err.message) ? "Saved too recently — try again in a few seconds" : "High scores are offline right now";
+    $("end-save").hidden = false;
+  }
+}
+function renderLb(el, data, limit, myRank){
+  if (!data) { el.innerHTML = `<li class="lb-empty" style="display:block">High scores are offline right now.</li>`; return; }
+  const rows = (data.scores || []).slice(0, limit);
+  if (!rows.length) { el.innerHTML = `<li class="lb-empty" style="display:block">No scores yet — be the first.</li>`; return; }
+  el.innerHTML = rows.map((r, i) => {
+    const when = r.at ? new Date(r.at).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }) : "";
+    const detail = [r.total ? `${r.right}/${r.total} right` : "", when].filter(Boolean).join(" · ");
+    return `<li class="${myRank === i + 1 ? "me" : ""}"><span class="r">${i + 1}</span>
+      <span class="n">${esc(r.name)}<small>${esc(detail)}</small></span>
+      <span class="s ${r.score < 0 ? "neg" : ""}">${money(r.score)}</span></li>`;
+  }).join("");
+}
+async function openScores(){
+  $("lb-list").innerHTML = `<li class="lb-empty" style="display:block">Loading…</li>`;
+  $("lbsheet").hidden = false;
+  renderLb($("lb-list"), await loadScores(), 25, game && game.rank);
+}
+
+/* ── player name: on-screen keyboard ────────────────────── */
+const player = { name: store.get("name", ""), draft: "", after: null };
+const KBD_ROWS = ["1234567890", "QWERTYUIOP", "ASDFGHJKL", "ZXCVBNM"];
+function buildKeyboard(){
+  let h = "";
+  KBD_ROWS.forEach((row, i) => {
+    if (i >= 2) h += `<span></span>`;                        // indent the lower rows like a real keyboard
+    h += [...row].map(ch => `<button data-k="${ch}">${ch}</button>`).join("");
+    if (i === 3) h += `<button class="fn sp2" data-k="del" aria-label="Delete">⌫</button>`;
+  });
+  h += `<button class="fn sp2" data-k="clr">CLEAR</button><button class="sp4" data-k=" ">SPACE</button>
+        <button class="go sp4" data-k="ok" id="kbd-ok">OK</button>`;
+  $("kbd").innerHTML = h;
+}
+function renderName(){
+  const d = player.draft;
+  $("name-display").innerHTML = (d ? esc(d).replace(/ /g, "&nbsp;") : `<span class="ph">Tap letters below</span>`) +
+    (d.length < CONFIG.nameMax ? `<i class="caret"></i>` : "");
+  $("kbd-ok").disabled = !d.trim();
+}
+function openName(after){
+  player.draft = player.name; player.after = after || null;
+  renderName(); $("who").hidden = false;
+}
+function nameKey(k){
+  if ($("who").hidden) return;
+  if (k === "del") player.draft = player.draft.slice(0, -1);
+  else if (k === "clr") player.draft = "";
+  else if (k === "ok") {
+    const v = player.draft.replace(/\s+/g, " ").trim().toUpperCase();
+    if (!v) return;
+    setPlayer(v); $("who").hidden = true;
+    const f = player.after; player.after = null; if (f) f();
+    return;
+  } else if (player.draft.length < CONFIG.nameMax && !(k === " " && (!player.draft || player.draft.endsWith(" ")))) {
+    player.draft += k;
+  }
+  renderName();
+}
+function setPlayer(name){
+  player.name = name; store.set("name", name);
+  $("player-name").textContent = name || "Guest";
 }
 
 let toastT;
@@ -710,10 +934,13 @@ $("board").addEventListener("click", e => {
   const b = e.target.closest(".cell"); if (!b || b.disabled || !game) return;
   openCell(game.cells[+b.dataset.i]);
 });
-$("wagers").addEventListener("click", e => {
-  const b = e.target.closest("button"); if (!b) return;
-  game.cur.wager = +b.dataset.w; showClue();
-});
+$("numpad").addEventListener("click", e => { const b = e.target.closest("button"); if (b) wagerKey(b.dataset.n); });
+$("kbd").addEventListener("click", e => { const b = e.target.closest("button"); if (b && !b.disabled) nameKey(b.dataset.k); });
+$("name-guest").addEventListener("click", () => { $("who").hidden = true; setPlayer(""); const f = player.after; player.after = null; if (f) f(); });
+$("player").addEventListener("click", () => openName());
+$("scores-btn").addEventListener("click", openScores);
+$("lb-close").addEventListener("click", () => { $("lbsheet").hidden = true; });
+$("end-save").addEventListener("click", () => player.name ? submitScore() : openName(submitScore));
 $("answers").addEventListener("click", e => { const b = e.target.closest(".ans"); if (b && !b.disabled) choose(+b.dataset.k); });
 $("deck-play").addEventListener("click", () => { if (game && game.cur && game.cur.phase === "ask") playCurrent(); });
 $("replay").addEventListener("click", () => { if (game && game.cur && game.cur.phase === "ask") playCurrent(); });
@@ -741,7 +968,22 @@ $("share").addEventListener("click", async () => {
   } catch {}
 });
 document.addEventListener("keydown", e => {
-  if (!game || e.metaKey || e.ctrlKey || e.altKey) return;
+  if (e.metaKey || e.ctrlKey || e.altKey) return;
+  if (!$("who").hidden) {
+    const k = e.key.length === 1 ? e.key.toUpperCase() : e.key;
+    if (/^[A-Z0-9 ]$/.test(k)) { e.preventDefault(); nameKey(k); }
+    else if (k === "Backspace") { e.preventDefault(); nameKey("del"); }
+    else if (k === "Enter") { e.preventDefault(); nameKey("ok"); }
+    return;
+  }
+  if (!$("lbsheet").hidden) { if (e.key === "Escape" || e.key === "Enter") $("lbsheet").hidden = true; return; }
+  if (!$("dd").hidden) {
+    if (/^\d$/.test(e.key)) wagerKey(e.key);
+    else if (e.key === "Backspace") wagerKey("del");
+    else if (e.key === "Enter") wagerKey("ok");
+    return;
+  }
+  if (!game) return;
   const c = game.cur;
   if (c && c.phase === "ask" && !$("clue").hidden) {
     const k = "abcd".indexOf(e.key.toLowerCase());
@@ -764,6 +1006,9 @@ function fitDeck(){
 }
 addEventListener("resize", fitDeck); fitDeck();
 
+buildKeyboard();
+setPlayer(player.name);
+if (!player.name) openName();
 load();
 </script>
 </body>
