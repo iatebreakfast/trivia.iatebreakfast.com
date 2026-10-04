@@ -491,6 +491,7 @@ button{font-family:inherit;color:inherit}
     <ol class="lb" id="end-lb"></ol>
     <div class="row">
       <button class="primary" id="again">Play a new board</button>
+      <button class="ghost" id="new-players"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>New players</button>
       <button class="ghost" id="share"><svg viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/></svg>Copy result</button>
     </div>
   </section>
@@ -519,6 +520,7 @@ button{font-family:inherit;color:inherit}
       <p class="setup-note" id="setup-note"></p>
       <div class="row">
         <button class="primary" id="setup-go">Start the board</button>
+        <button class="ghost" id="setup-clear">Clear names</button>
         <button class="ghost" id="setup-cancel">Cancel</button>
       </div>
     </div>
@@ -1090,8 +1092,8 @@ function buildKeyboard(){
   $("kbd").innerHTML = h;
 }
 
-function openSetup(){
-  setup.names = (party.names && party.names.length ? party.names : [""]).slice(0, CONFIG.maxPlayers);
+function openSetup(fresh = false){
+  setup.names = fresh ? [""] : (party.names && party.names.length ? party.names : [""]).slice(0, CONFIG.maxPlayers);
   $("setup-cancel").hidden = !game;
   renderSetup();
   $("setup").hidden = false;
@@ -1108,7 +1110,14 @@ function renderSetup(){
     ? (missing ? "No name? You can play as a guest, but guest scores don't go on the leaderboard." : "Your score goes on the shared leaderboard when you finish the board.")
     : "Pass the device around: players take turns picking squares. Everyone's score is saved when the board is finished.";
   $("setup-go").disabled = n > 1 && missing;
-  $("setup-go").textContent = n === 1 && missing ? "Play as guest" : "Start the board";
+  $("setup-go").textContent = n === 1 && missing ? "Play as guest" : "Start a new board";
+  $("setup-clear").hidden = !setup.names.some(Boolean);
+}
+/* Forget everyone: back to one empty slot; the new line-up is saved on Start. */
+function clearPlayers(){
+  SFX.play("tap");
+  setup.names = [""];
+  renderSetup();
 }
 function setCount(n){
   SFX.play("tap");
@@ -1145,9 +1154,10 @@ function nameKey(k){
 function confirmSetup(){
   const names = setup.names.map(x => x.trim());
   if (names.length > 1 && names.some(x => !x)) return;
+  if (game && !game.finished && game.cells.some(c => c.done) && !confirmNew()) return;
   party.names = names;
   store.set("players", names);
-  if (names.length === 1) store.set("name", names[0]);
+  store.set("name", names.length === 1 ? names[0] : "");
   $("setup").hidden = true;
   startGame(names);
 }
@@ -1188,6 +1198,8 @@ $("player").addEventListener("click", () => { if (!game || !game.cur) openSetup(
 $("pcount").addEventListener("click", e => { const b = e.target.closest("button"); if (b) setCount(+b.dataset.n); });
 $("slots").addEventListener("click", e => { const b = e.target.closest(".slot"); if (b) editSlot(+b.dataset.i); });
 $("setup-go").addEventListener("click", confirmSetup);
+$("setup-clear").addEventListener("click", clearPlayers);
+$("new-players").addEventListener("click", () => openSetup(true));
 $("setup-cancel").addEventListener("click", () => { $("setup").hidden = true; });
 $("kbd").addEventListener("click", e => { const b = e.target.closest("button"); if (b && !b.disabled) nameKey(b.dataset.k); });
 $("name-cancel").addEventListener("click", () => { $("who").hidden = true; });
