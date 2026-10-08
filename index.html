@@ -265,8 +265,14 @@ button{font-family:inherit;color:inherit}
   font-size:11px;color:var(--ink-faint)}
 .foot p{margin:0;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .foot a{color:var(--ink-dim);text-decoration:none}
-.foot a.bmc{display:inline-flex;align-items:center;gap:6px;font:700 10px/1 var(--sans);letter-spacing:.1em;
-  text-transform:uppercase;color:#fff;background:var(--accent);border-radius:6px;padding:7px 11px}
+.foot .about-tab{flex:none;border:1px solid var(--line-2);background:transparent;color:var(--ink-dim);border-radius:6px;
+  padding:6px 11px;font:700 10px/1 var(--sans);letter-spacing:.1em;text-transform:uppercase;cursor:pointer}
+.foot .about-tab:hover,.foot .about-tab:focus-visible{color:#fff;border-color:var(--ink-dim)}
+.about-copy{max-width:420px;margin:0 auto;text-align:left;display:grid;gap:10px}
+.about-copy p{margin:0;font-size:14px;line-height:1.55;color:var(--ink-dim)}
+.about-copy b{color:var(--cream);font-weight:700}
+a.bmc{display:inline-flex;align-items:center;gap:8px;text-decoration:none;color:#fff;background:var(--accent);
+  border-radius:22px;padding:12px 20px;font:750 13px/1 var(--sans);white-space:nowrap}
 .foot .keys kbd{font:600 10px/1 var(--mono);border:1px solid var(--line-2);border-radius:4px;padding:1px 4px;color:var(--ink-dim)}
 
 .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);opacity:0;pointer-events:none;
@@ -526,6 +532,22 @@ button{font-family:inherit;color:inherit}
     </div>
   </section>
 
+  <!-- About -->
+  <section class="sheet" id="aboutsheet" role="dialog" aria-labelledby="about-title" hidden>
+    <div class="sheet-in">
+      <p class="eyebrow">Name That Track</p>
+      <h2 id="about-title">About</h2>
+      <div class="about-copy">
+        <p>A Jeopardy-style music quiz built on the <b>Billboard year-end Hot 100</b>, 1946 to 2020: more than 6,000 songs across 11 genres. Pick a square, hear a short clip, and choose the title. Bigger squares mean deeper cuts and shorter clips.</p>
+        <p>Name That Track is a hobby project from <b>iatebreakfast.com</b>, running on a couple of small home servers. If you enjoy it, a coffee helps keep it going.</p>
+      </div>
+      <div class="row">
+        <a class="bmc" href="https://www.buymeacoffee.com/iatebreakfast" target="_blank" rel="noopener"><span aria-hidden="true">&#9749;</span> Buy me a coffee</a>
+        <button class="ghost" id="about-close">Back to the game</button>
+      </div>
+    </div>
+  </section>
+
   <!-- High scores -->
   <section class="sheet" id="lbsheet" hidden>
     <div class="sheet-in">
@@ -543,7 +565,7 @@ button{font-family:inherit;color:inherit}
 </main>
 
 <footer class="foot">
-  <a class="bmc" href="https://www.buymeacoffee.com/iatebreakfast" target="_blank" rel="noopener"><span aria-hidden="true">&#9749;</span> Buy me a coffee</a>
+  <button class="about-tab" id="about-btn" aria-haspopup="dialog">About</button>
   <p id="foot-stats">6,000+ year-end chart records, 1946–2020 · 11 genres · <a href="https://iatebreakfast.com">iatebreakfast.com</a></p>
   <span class="keys"><kbd>A</kbd>–<kbd>D</kbd> answer · <kbd>R</kbd> replay · <kbd>Esc</kbd> pass</span>
 </footer>
@@ -1206,6 +1228,8 @@ $("name-cancel").addEventListener("click", () => { $("who").hidden = true; });
 $("scores-btn").addEventListener("click", () => openScores());
 $("lb-tabs").addEventListener("click", e => { const b = e.target.closest("button"); if (b) openScores(b.dataset.p); });
 $("lb-close").addEventListener("click", () => { $("lbsheet").hidden = true; });
+$("about-btn").addEventListener("click", () => { SFX.play("tap"); $("aboutsheet").hidden = false; $("about-close").focus(); });
+$("about-close").addEventListener("click", () => { $("aboutsheet").hidden = true; });
 $("sound").addEventListener("click", () => {
   SFX.on = !SFX.on; $("sound").setAttribute("aria-pressed", String(SFX.on));
   if (SFX.on) SFX.play("tap");
@@ -1232,6 +1256,7 @@ document.addEventListener("keydown", e => {
     return;
   }
   if (!$("setup").hidden) { if (e.key === "Enter") confirmSetup(); return; }
+  if (!$("aboutsheet").hidden) { if (e.key === "Escape") $("aboutsheet").hidden = true; return; }
   if (!$("lbsheet").hidden) { if (e.key === "Escape" || e.key === "Enter") $("lbsheet").hidden = true; return; }
   if (!$("dd").hidden) {
     if (/^\d$/.test(e.key)) wagerKey(e.key);
