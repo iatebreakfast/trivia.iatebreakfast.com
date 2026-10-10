@@ -184,7 +184,7 @@ def make_options(answer, row, tracks=None):
     return opts
 
 
-def fill_cell(cell, gtracks, used, pool=None):
+def fill_cell(cell, gtracks, used, era_tracks=None):
     pool = [t for t in gtracks if t["row"] == cell["row"] and t["k"] not in used] or \
            [t for t in gtracks if t["row"] == cell["row"]]
     answer = random.choice(pool)
@@ -193,7 +193,7 @@ def fill_cell(cell, gtracks, used, pool=None):
     lo = min(max(15, dur * .22), max(0, dur - length - 5))
     hi = max(lo, dur * .6 - length)
     start = lo + random.random() * (hi - lo)
-    cell.update(answer=answer, options=make_options(answer, cell["row"], pool),
+    cell.update(answer=answer, options=make_options(answer, cell["row"], era_tracks),
                 start=round(start, 1), end=round(min(dur - 1, start + length), 1))
 
 
