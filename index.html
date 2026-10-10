@@ -846,7 +846,7 @@ const LocalEngine = (() => {
                      start, end: Math.min(dur - 1, start + len), dd: false, done: false });
       }));
       pick(cells.filter(c => c.row > 0)).dd = true;
-      g = { cats, cells, players: names.map(n => ({ name: n, score: 0, right: 0, wrong: 0, fifty: true })), turn: 0, open: null };
+      g = { cats, cells, players: names.map(n => ({ name: n, score: 0, right: 0, wrong: 0, fifty: true, streak: 0, hats: 0 })), turn: 0, open: null };
       return { cats, values: CONFIG.values, cells: cells.map(({ i, col, row, value }) => ({ i, col, row, value })), players: pub(), turn: 0 };
     },
     async open(i){
@@ -865,11 +865,14 @@ const LocalEngine = (() => {
       const c = g.open, p = g.players[g.turn], correct = c.options.indexOf(c.answer), right = k === correct;
       const stake = c.dd ? g.wager : c.value, win = c.dd ? stake * 2 : stake;
       const delta = k == null ? 0 : (right ? win : -stake);
-      p.score += delta; if (right) p.right++; else if (k != null) p.wrong++;
+      let bonus = 0;
+      if (right) { p.right++; p.streak++; if (p.streak % 3 === 0) bonus = hatBonus(++p.hats); }
+      else if (k != null) { p.wrong++; p.streak = 0; }
+      p.score += delta + bonus;
       c.done = true; c.outcome = k == null ? "skip" : (right ? "ok" : "no"); g.open = null;
       const by = g.turn; g.turn = (g.turn + 1) % g.players.length;
       const a = c.answer, finished = g.cells.every(x => x.done);
-      return { correct, right, delta, stake, dd: c.dd, outcome: c.outcome, by,
+      return { correct, right, delta, stake, dd: c.dd, outcome: c.outcome, by, bonus,
                answer: { t: a.t, a: a.a, y: a.y, r: a.r, c: a.c, d: a.d }, players: pub(), turn: g.turn,
                finished, ranks: finished ? g.players.map(() => null) : undefined };
     }
@@ -1094,17 +1097,18 @@ async function choose(k){
   // Easter egg: every 3 right in a row for this player (a pass doesn't break the streak)
   if (r.right) {
     const n = (game.streaks[r.by] = (game.streaks[r.by] || 0) + 1);
-    if (n % 3 === 0) setTimeout(() => showHatTrick(who, n), 650);
+    if (n % 3 === 0) setTimeout(() => showHatTrick(who, n, r.bonus), 650);
   } else if (k != null) game.streaks[r.by] = 0;
 
   const a = r.answer, name = solo() ? "" : `${displayName(who)}: `;
   const won = r.dd ? r.stake * 2 : r.stake;
   if (a.c) { $("cover").src = a.c; $("deck").classList.add("revealed"); }
   $("p-title").textContent = r.right ? "Correct!" : (k == null ? "Passed." : "Sorry, no.");
-  $("p-sub").textContent = r.right ? `${name}+${money(won)}${r.dd ? " — Double Win!" : ""}`
+  const extra = r.bonus ? ` + ${money(r.bonus)} hat-trick bonus` : "";
+  $("p-sub").textContent = r.right ? `${name}+${money(won)}${r.dd ? " — Double Win!" : ""}${extra}`
     : (k == null ? `${name}no change` : `${name}−${money(r.stake).replace("−", "")}`);
   $("r-verdict").className = "verdict " + r.outcome;
-  $("r-verdict").textContent = r.right ? `Correct · +${money(won)}` : (k == null ? "Passed" : `Wrong · −${money(r.stake).replace("−", "")}`);
+  $("r-verdict").textContent = r.right ? `Correct · +${money(won)}${extra}` : (k == null ? "Passed" : `Wrong · −${money(r.stake).replace("−", "")}`);
   $("r-title").textContent = a.t;
   $("r-artist").textContent = `${a.a} · ${a.y}${a.r ? " · Year-end #" + a.r : ""}`;
   game.finished = !!r.finished; game.ranks = r.ranks;
@@ -1116,10 +1120,12 @@ async function choose(k){
   else clip.end = audio.currentTime + CONFIG.revealPlay;
 }
 
+// Hat-trick bonus for a player's nth hat trick: $1,001, then $1,500, $2,000, $2,500 …
+const hatBonus = n => n === 1 ? 1001 : 1000 + 500 * (n - 1);
 let hatT = 0;
-function showHatTrick(p, n){
+function showHatTrick(p, n, bonus){
   const name = p && p.name ? p.name : (solo() ? "" : displayName(p));
-  $("hat-line").textContent = (name ? name + " · " : "") + `${n} in a row`;
+  $("hat-line").textContent = (name ? name + " · " : "") + `${n} in a row` + (bonus ? ` · +${money(bonus)} bonus!` : "");
   $("hattrick").hidden = false;
   SFX.play("hat");
   clearTimeout(hatT); hatT = setTimeout(hideHatTrick, 4200);
@@ -1321,7 +1327,7 @@ function openEra(){
 function renderEra(){
   const sel = eraState.sel, all = sel.length === CONFIG.eras.length;
   $("eras").innerHTML =
-    `<button class="era all" data-i="all" aria-pressed="${all}"><span class="yr">Entire archive</span>` +
+    `<button class="era all" data-i="all" aria-pressed="${all}"><span class="yr">Entire archive (Feeling Lucky)</span>` +
     `<span class="ds">1946–2020 · every song, every genre</span></button>` +
     CONFIG.eras.map(([a, b, d], i) =>
       `<button class="era" data-i="${i}" aria-pressed="${!all && sel.includes(i)}"><span class="yr">${a}–${b}</span>` +
