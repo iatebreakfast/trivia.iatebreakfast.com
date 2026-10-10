@@ -305,6 +305,16 @@ a.bmc{display:inline-flex;align-items:center;gap:8px;text-decoration:none;color:
 .slot .sn{font:850 18px/1 var(--mono);letter-spacing:.1em;color:var(--cream);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .slot .sn.empty{font:600 13px/1 var(--sans);letter-spacing:0;color:var(--ink-faint)}
 .slot .edit{font:650 11px/1 var(--sans);color:var(--ink-faint)}
+.eras{display:grid;grid-template-columns:1fr 1fr;gap:8px;max-width:440px;margin:0 auto}
+.era{display:grid;gap:4px;align-content:center;min-height:62px;padding:10px 14px;border-radius:11px;border:1px solid var(--line-2);
+  background:#1b1b1b;color:var(--ink);cursor:pointer;text-align:left;transition:.15s;font:inherit;position:relative}
+.era:hover{border-color:var(--ink-dim)}
+.era .yr{font:850 17px/1 var(--mono);letter-spacing:.02em;color:var(--cream)}
+.era .ds{font:600 11.5px/1.3 var(--sans);color:var(--ink-faint)}
+.era[aria-pressed="true"]{border-color:var(--accent);background:var(--tint)}
+.era[aria-pressed="true"] .yr{color:#fff}
+.era[aria-pressed="true"]::after{content:"✓";position:absolute;top:8px;right:10px;font:800 12px/1 var(--sans);color:var(--accent-ink)}
+.era.all{grid-column:1 / -1}
 .setup-note{font-size:12px;color:var(--ink-faint);margin:12px auto 0;max-width:380px;line-height:1.5}
 .practice{display:inline-block;font:700 10px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:#f5c84b;
   border:1px solid rgba(245,200,75,.4);border-radius:6px;padding:5px 8px;margin-top:10px}
@@ -363,6 +373,8 @@ a.bmc{display:inline-flex;align-items:center;gap:8px;text-decoration:none;color:
   .pchip .pn{font-size:10px;letter-spacing:.02em}
   .pchip .ps{font-size:12px}
   .slot .sl{width:52px}
+  .era{min-height:54px;padding:8px 12px}
+  .era .yr{font-size:15px}
   .kbd{gap:4px;grid-template-columns:repeat(10,minmax(0,1fr))}
   .kbd button{height:44px;font-size:15px;border-radius:7px}
   .numpad{grid-template-columns:repeat(3,72px)}
@@ -532,6 +544,21 @@ a.bmc{display:inline-flex;align-items:center;gap:8px;text-decoration:none;color:
     </div>
   </section>
 
+  <!-- Timeline: which years the board is dealt from -->
+  <section class="sheet" id="era" hidden>
+    <div class="sheet-in">
+      <p class="eyebrow">Name That Track</p>
+      <h2>Pick your timeline</h2>
+      <div class="eras" id="eras" role="group" aria-label="Timelines"></div>
+      <p class="setup-note" id="era-note"></p>
+      <div class="row">
+        <button class="primary" id="era-go">Deal the board</button>
+        <button class="ghost" id="era-players">Change players</button>
+        <button class="ghost" id="era-cancel">Cancel</button>
+      </div>
+    </div>
+  </section>
+
   <!-- About -->
   <section class="sheet" id="aboutsheet" role="dialog" aria-labelledby="about-title" hidden>
     <div class="sheet-in">
@@ -588,7 +615,13 @@ const CONFIG = {
   minPerCell: 3,
   nameMax:    12,
   wagerMin:   5,
-  maxPlayers: 4
+  maxPlayers: 4,
+  eras: [   // 20-year timelines (the archive ends in 2020)
+    [1946, 1965, "Big bands, doo-wop & early rock 'n' roll"],
+    [1966, 1985, "Motown, classic rock & disco"],
+    [1986, 2005, "MTV, grunge & hip-hop's rise"],
+    [2006, 2020, "Streaming-era pop & hip-hop"]
+  ]
 };
 /* ════════════════════════════════════════════════════════ */
 
@@ -682,7 +715,7 @@ async function api(path, body){
 
 const RemoteEngine = {
   online: true,
-  async start(names){ const g = await api("game", { players: names }); this.id = g.id; return g; },
+  async start(names, eras){ const g = await api("game", { players: names, eras: eras || [] }); this.id = g.id; return g; },
   open(i){ return api(`game/${this.id}/open`, { cell: i }); },
   wager(n){ return api(`game/${this.id}/wager`, { amount: n }); },
   fifty(){ return api(`game/${this.id}/fifty`, {}); },
@@ -715,13 +748,14 @@ const LocalEngine = (() => {
     })();
     return loading;
   }
+  let POOL = null;
   function options(answer, row){
     const [span, same] = [[8, false], [6, false], [5, true], [3, true], [2, true]][row];
     const taken = new Set([answer.k]), decoys = [];
     for (const ok of [t => Math.abs(t.y - answer.y) <= span && (!same || t.g === answer.g),
                       t => Math.abs(t.y - answer.y) <= span * 2 && (!same || t.g === answer.g),
                       t => Math.abs(t.y - answer.y) <= 15, () => true]) {
-      for (const t of shuffle(ALL.filter(ok))) { if (decoys.length >= 3) break; if (!taken.has(t.k)) { taken.add(t.k); decoys.push(t); } }
+      for (const t of shuffle((POOL || ALL).filter(ok))) { if (decoys.length >= 3) break; if (!taken.has(t.k)) { taken.add(t.k); decoys.push(t); } }
       if (decoys.length >= 3) break;
     }
     return shuffle([answer, ...decoys]);
@@ -731,11 +765,20 @@ const LocalEngine = (() => {
                          decade: c.answer.d, clipSecs: CONFIG.clipSecs[c.row] });
   return {
     online: false,
-    async start(names){
+    async start(names, eras){
       await load();
-      const cats = shuffle(Object.keys(GENRES)).slice(0, CONFIG.columns), used = new Set(), cells = [];
+      let genres = GENRES; POOL = null;
+      if (eras && eras.length && eras.length < CONFIG.eras.length) {
+        POOL = ALL.filter(t => eras.some(i => t.y >= CONFIG.eras[i][0] && t.y <= CONFIG.eras[i][1]));
+        genres = {};
+        [...new Set(POOL.map(t => t.g).filter(Boolean))].forEach(n => {
+          const gt = POOL.filter(t => t.g === n);
+          if (CONFIG.values.every((_, row) => gt.filter(t => t.row === row).length >= CONFIG.minPerCell)) genres[n] = gt;
+        });
+      }
+      const cats = shuffle(Object.keys(genres)).slice(0, CONFIG.columns), used = new Set(), cells = [];
       cats.forEach((name, col) => CONFIG.values.forEach((value, row) => {
-        const gt = GENRES[name];
+        const gt = genres[name];
         const pool = gt.filter(t => t.row === row && !used.has(t.k));
         const answer = pick(pool.length ? pool : gt.filter(t => t.row === row)); used.add(answer.k);
         const dur = answer.s, len = CONFIG.clipSecs[row];
@@ -829,26 +872,28 @@ audio.addEventListener("error", () => {
    GAME STATE + BOARD
    ══════════════════════════════════════════════════════════ */
 let game = null;
-const party = { names: store.get("players", null) || (store.get("name", "") ? [store.get("name", "")] : null) };
+const party = { names: store.get("players", null) || (store.get("name", "") ? [store.get("name", "")] : null),
+                eras: store.get("eras", null) };
 
-async function startGame(names){
+async function startGame(names, eras = party.eras){
   stopAudio(150);
   $("end").hidden = true; $("clue").hidden = true; $("dd").hidden = true;
   $("notice").hidden = false;
-  $("notice").innerHTML = `<div><b>Dealing a new board…</b>Picking songs from 6,000+ chart records</div>`;
+  const label = eraLabel(eras);
+  $("notice").innerHTML = `<div><b>Dealing a new board…</b>${label ? `Picking songs from ${esc(label)}` : "Picking songs from 6,000+ chart records"}</div>`;
   let engine = RemoteEngine, g;
-  try { g = await RemoteEngine.start(names); }
+  try { g = await RemoteEngine.start(names, eras); }
   catch (err) {
-    if (err.status === 429) { await sleep(5200); try { g = await RemoteEngine.start(names); } catch (e) { err = e; } }
+    if (err.status === 429) { await sleep(5200); try { g = await RemoteEngine.start(names, eras); } catch (e) { err = e; } }
     if (!g) {
-      if (err.status === 400) { $("notice").hidden = true; toast(err.message); openSetup(); return; }
+      if (err.status === 400) { $("notice").hidden = true; toast(err.message); /era/i.test(err.message) ? openEra() : openSetup(); return; }
       engine = LocalEngine;
-      try { g = await LocalEngine.start(names); }
+      try { g = await LocalEngine.start(names, eras); }
       catch { $("notice").innerHTML = `<div><b>The music library is offline</b>audio.iatebreakfast.com didn't answer. Try again in a minute.</div>`; return; }
       toast("Practice mode — the score server is offline, so scores won't be saved");
     }
   }
-  game = { engine, cats: g.cats, players: g.players, turn: g.turn, cur: null, finished: false,
+  game = { engine, cats: g.cats, players: g.players, turn: g.turn, cur: null, finished: false, era: label,
            cells: g.cells.map(c => ({ ...c, done: false, outcome: null, title: "" })) };
   $("notice").hidden = true;
   renderBoard(); renderPlayers(false);
@@ -1040,7 +1085,7 @@ function finish(){
     if (isBest) stats.best = p.score;
     $("end-score").textContent = money(p.score);
     $("end-score").classList.toggle("neg", p.score < 0);
-    $("end-line").textContent = `${displayName(p)} · ${p.right} right · ${p.wrong} wrong · ${game.cells.length - p.right - p.wrong} passed`;
+    $("end-line").textContent = `${displayName(p)} · ${p.right} right · ${p.wrong} wrong · ${game.cells.length - p.right - p.wrong} passed` + (game.era ? ` · ${game.era}` : "");
     $("end-best").innerHTML = isBest && p.score > 0 ? `<span class="new-best">Your new best</span>`
       : `<span class="line">Your best: ${money(stats.best)} · ${stats.games} boards played</span>`;
     $("end-podium").hidden = true;
@@ -1048,7 +1093,7 @@ function finish(){
     const w = order[0], tie = order[1] && order[1].score === w.score;
     $("end-score").textContent = tie ? "It's a tie!" : `${displayName(w)} wins`;
     $("end-score").classList.remove("neg");
-    $("end-line").textContent = `${game.players.length} players · ${game.cells.length} squares`;
+    $("end-line").textContent = `${game.players.length} players · ${game.cells.length} squares` + (game.era ? ` · ${game.era}` : "");
     $("end-best").innerHTML = "";
     $("end-podium").hidden = false;
     $("end-podium").innerHTML = order.map((p, i) => {
@@ -1085,7 +1130,7 @@ function renderLb(el, data, limit, me){
     const detail = [r.total ? `${r.right}/${r.total} right` : "", when].filter(Boolean).join(" · ");
     const mine = me && r.name === me.name && r.score === me.score;
     return `<li class="${mine ? "me" : ""}"><span class="r">${i + 1}</span>
-      <span class="n">${esc(r.name)}${r.players > 1 ? `<span class="tag">${r.players}P</span>` : ""}<small>${esc(detail)}</small></span>
+      <span class="n">${esc(r.name)}${r.players > 1 ? `<span class="tag">${r.players}P</span>` : ""}${r.era ? `<span class="tag" title="${esc(r.era)}">${esc(shortEra(r.era))}</span>` : ""}<small>${esc(detail)}</small></span>
       <span class="s ${r.score < 0 ? "neg" : ""}">${money(r.score)}</span></li>`;
   }).join("");
 }
@@ -1132,7 +1177,7 @@ function renderSetup(){
     ? (missing ? "No name? You can play as a guest, but guest scores don't go on the leaderboard." : "Your score goes on the shared leaderboard when you finish the board.")
     : "Pass the device around: players take turns picking squares. Everyone's score is saved when the board is finished.";
   $("setup-go").disabled = n > 1 && missing;
-  $("setup-go").textContent = n === 1 && missing ? "Play as guest" : "Start a new board";
+  $("setup-go").textContent = n === 1 && missing ? "Play as guest" : "Next: pick timeline";
   $("setup-clear").hidden = !setup.names.some(Boolean);
 }
 /* Forget everyone: back to one empty slot; the new line-up is saved on Start. */
@@ -1181,7 +1226,56 @@ function confirmSetup(){
   store.set("players", names);
   store.set("name", names.length === 1 ? names[0] : "");
   $("setup").hidden = true;
-  startGame(names);
+  openEra();
+}
+
+/* ── timeline picker: shown after players are set, before every board ── */
+const eraState = { sel: [] };
+function eraLabel(eras){
+  if (!eras || !eras.length || eras.length === CONFIG.eras.length) return "";
+  const s = [...eras].sort((a, b) => a - b), runs = [];
+  s.forEach(i => { const r = runs[runs.length - 1]; if (r && i === r[1] + 1) r[1] = i; else runs.push([i, i]); });
+  return runs.map(([a, b]) => `${CONFIG.eras[a][0]}–${CONFIG.eras[b][1]}`).join(" + ");
+}
+const shortEra = label => String(label).replace(/\b(19|20)(\d\d)\b/g, "’$2");
+function openEra(){
+  eraState.sel = party.eras && party.eras.length ? [...party.eras] : CONFIG.eras.map((_, i) => i);
+  $("era-cancel").hidden = !game;
+  renderEra();
+  $("era").hidden = false;
+}
+function renderEra(){
+  const sel = eraState.sel, all = sel.length === CONFIG.eras.length;
+  $("eras").innerHTML =
+    `<button class="era all" data-i="all" aria-pressed="${all}"><span class="yr">Entire archive</span>` +
+    `<span class="ds">1946–2020 · every song, every genre</span></button>` +
+    CONFIG.eras.map(([a, b, d], i) =>
+      `<button class="era" data-i="${i}" aria-pressed="${!all && sel.includes(i)}"><span class="yr">${a}–${b}</span>` +
+      `<span class="ds">${esc(d)}</span></button>`).join("");
+  $("era-note").textContent = !sel.length ? "Pick at least one timeline."
+    : all ? "Songs from all 75 years of year-end charts."
+    : `Songs only from ${eraLabel(sel)}. Tap more timelines to combine them.`;
+  $("era-go").disabled = !sel.length;
+}
+function eraTap(key){
+  SFX.play("tap");
+  const n = CONFIG.eras.length, sel = eraState.sel;
+  if (key === "all") eraState.sel = CONFIG.eras.map((_, i) => i);
+  else {
+    const i = +key;
+    // From "entire archive", the first tap picks just that timeline
+    if (sel.length === n) eraState.sel = [i];
+    else eraState.sel = sel.includes(i) ? sel.filter(x => x !== i) : [...sel, i].sort((a, b) => a - b);
+  }
+  renderEra();
+}
+function confirmEra(){
+  const sel = eraState.sel;
+  if (!sel.length) return;
+  party.eras = sel.length === CONFIG.eras.length ? null : sel;
+  store.set("eras", party.eras);
+  $("era").hidden = true;
+  startGame(party.names);
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -1204,13 +1298,17 @@ $("replay").addEventListener("click", () => { if (game && game.cur && game.cur.p
 $("pass").addEventListener("click", () => choose(null));
 $("fifty").addEventListener("click", fiftyFifty);
 $("back").addEventListener("click", backToBoard);
-$("again").addEventListener("click", () => startGame(party.names));
+$("again").addEventListener("click", () => openEra());
 $("newgame").addEventListener("click", () => {
   if (!game || game.cur) return;
   const started = game.cells.some(c => c.done);
   if (started && !game.finished && !confirmNew()) return;
-  startGame(party.names);
+  openEra();
 });
+$("eras").addEventListener("click", e => { const b = e.target.closest(".era"); if (b) eraTap(b.dataset.i); });
+$("era-go").addEventListener("click", confirmEra);
+$("era-players").addEventListener("click", () => { $("era").hidden = true; openSetup(); });
+$("era-cancel").addEventListener("click", () => { $("era").hidden = true; });
 let confirmT = 0;
 function confirmNew(){
   if (Date.now() - confirmT < 3000) return true;
@@ -1256,6 +1354,11 @@ document.addEventListener("keydown", e => {
     return;
   }
   if (!$("setup").hidden) { if (e.key === "Enter") confirmSetup(); return; }
+  if (!$("era").hidden) {
+    if (e.key === "Enter") confirmEra();
+    else if (e.key === "Escape" && game) $("era").hidden = true;
+    return;
+  }
   if (!$("aboutsheet").hidden) { if (e.key === "Escape") $("aboutsheet").hidden = true; return; }
   if (!$("lbsheet").hidden) { if (e.key === "Escape" || e.key === "Enter") $("lbsheet").hidden = true; return; }
   if (!$("dd").hidden) {
@@ -1289,7 +1392,7 @@ addEventListener("resize", fitDeck); fitDeck();
 
 buildKeyboard();
 $("notice").innerHTML = `<div><b>Name That Track</b>Pick who's playing to deal a board.</div>`;
-if (party.names && party.names.length) startGame(party.names);
+if (party.names && party.names.length) openEra();
 else openSetup();
 </script>
 </body>
