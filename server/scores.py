@@ -49,7 +49,9 @@ DECOY_RULES = [(8, False), (6, False), (5, True), (3, True), (2, True)]   # (yea
 MIN_PER_CELL = 3
 WAGER_MIN = 5
 MAX_PLAYERS = 4
-HAT_BONUS = 1001   # first hat trick (3 right in a row) per player per game
+def hat_bonus(n):
+    """Bonus for a player's nth hat trick (3 right in a row): $1,001, then $1,500, $2,000, $2,500 …"""
+    return 1001 if n == 1 else 1000 + 500 * (n - 1)
 ERAS = [(1946, 1965), (1966, 1985), (1986, 2005), (2006, 2020)]   # 20-year timelines players can pick
 NAME_RE = re.compile(r"^[A-Z0-9 .'!&-]{1,12}$")
 
@@ -219,7 +221,7 @@ def new_game(names, ip, eras):
     game = {
         "id": gid, "created": time.time(), "ip": ip, "cats": cats, "cells": cells,
         "players": [{"name": n, "score": 0, "right": 0, "wrong": 0, "asked": 0, "fifty": True,
-                     "streak": 0, "hat": False} for n in names],
+                     "streak": 0, "hats": 0} for n in names],
         "turn": 0, "open": None, "wager": None, "finished": False, "eras": sorted(eras),
     }
     games[gid] = game
@@ -516,8 +518,9 @@ class Handler(BaseHTTPRequestHandler):
         if right:
             p["right"] += 1
             p["streak"] = p.get("streak", 0) + 1
-            if p["streak"] % 3 == 0 and not p.get("hat"):   # first hat trick pays a bonus
-                p["hat"], bonus = True, HAT_BONUS
+            if p["streak"] % 3 == 0:                         # every hat trick pays a growing bonus
+                p["hats"] = p.get("hats", 0) + 1
+                bonus = hat_bonus(p["hats"])
         elif choice is not None:
             p["wrong"] += 1
             p["streak"] = 0                                  # a pass doesn't break the streak
