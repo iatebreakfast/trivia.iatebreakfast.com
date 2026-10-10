@@ -27,6 +27,7 @@ The song catalog is `https://audio.iatebreakfast.com/library.json`, the same fil
 - **"Final answer":** your pick locks in for a beat before the reveal. The cover art appears and the song keeps playing for 12 seconds.
 - **Double Win:** one secret square per board (never in the $200 row). You enter a wager on the on-screen number pad, from $5 up to your score (or $1,000 if you have less). A right answer pays **double the wager**, and a wrong one loses it.
 - **Players (1–4, pass-and-play):** the "Who's playing?" screen sets the number of players, and each name is typed on an on-screen keyboard (up to 12 letters, numbers or spaces). Players take turns picking squares, and a scoreboard strip shows everyone's score with an arrow on whoever's turn it is. The Double Win wager limit and the 50:50 are per player. The browser remembers the line-up; tap the players button in the top bar to change it. A solo player can play as a guest, but guest scores aren't saved.
+- **Timelines:** after the players are set, and before every board, players pick the years the songs come from: the entire archive, or one or more 20-year timelines (1946–1965, 1966–1985, 1986–2005, 2006–2020; the archive ends in 2020). Timelines can be combined. The browser remembers the last choice, and leaderboard entries from a timeline show a tag such as "’66–’85".
 - **High scores:** shared by everyone, with **This week / This month / All time** tabs (weeks start Monday 00:00 UTC). The server saves every named player's score when a board is finished, and each player sees their week and all-time placing. Multiplayer entries carry a "2P", "3P" or "4P" tag.
 - **Sound effects:** lock-in, right, wrong, pass, 50:50, Double Win fanfare, turn change and end-of-board jingle. They're synthesized in the browser (no audio files), and the speaker button mutes them; the setting is remembered.
 - **50:50:** one per board; it removes two wrong answers.
@@ -52,7 +53,7 @@ To fix a single artist, change their number in `genres.json`. The numbers index 
 
 Scored games run on the server, so the browser never has the answers:
 
-1. `POST /api/game` with `{"players": [...]}` deals a board. The browser gets the genres and dollar values, but not the songs.
+1. `POST /api/game` with `{"players": [...], "eras": [0, 2]}` deals a board. `eras` lists timeline indexes (0 = 1946–1965 … 3 = 2006–2020); empty or missing means the entire archive. The browser gets the genres and dollar values, but not the songs.
 2. `POST /api/game/<id>/open` with `{"cell": n}` returns the four answer titles and a **one-time clip link** (`/api/clip/<token>`). If the square is the Double Win, it returns the wager limit instead, and `POST …/wager` then unlocks the clip.
 3. `POST …/fifty` hides two wrong answers, once per player.
 4. `POST …/answer` with `{"choice": 0-3 | null}` checks the answer on the server, updates the score, passes the turn and reveals the song. After the last square, it writes every named player's score to the leaderboard and returns their week, month and all-time ranks.
