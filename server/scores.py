@@ -49,6 +49,7 @@ DECOY_RULES = [(8, False), (6, False), (5, True), (3, True), (2, True)]   # (yea
 MIN_PER_CELL = 3
 WAGER_MIN = 5
 MAX_PLAYERS = 4
+HAT_BONUS = 1001   # first hat trick (3 right in a row) per player per game
 ERAS = [(1946, 1965), (1966, 1985), (1986, 2005), (2006, 2020)]   # 20-year timelines players can pick
 NAME_RE = re.compile(r"^[A-Z0-9 .'!&-]{1,12}$")
 
@@ -217,7 +218,8 @@ def new_game(names, ip, eras):
     gid = secrets.token_urlsafe(12)
     game = {
         "id": gid, "created": time.time(), "ip": ip, "cats": cats, "cells": cells,
-        "players": [{"name": n, "score": 0, "right": 0, "wrong": 0, "asked": 0, "fifty": True} for n in names],
+        "players": [{"name": n, "score": 0, "right": 0, "wrong": 0, "asked": 0, "fifty": True,
+                     "streak": 0, "hat": False} for n in names],
         "turn": 0, "open": None, "wager": None, "finished": False, "eras": sorted(eras),
     }
     games[gid] = game
@@ -509,18 +511,23 @@ class Handler(BaseHTTPRequestHandler):
         stake = game["wager"] if cell["dd"] else cell["value"]
         win = stake * 2 if cell["dd"] else stake
         delta = 0 if choice is None else (win if right else -stake)
-        p["score"] += delta
         p["asked"] += 1
+        bonus = 0
         if right:
             p["right"] += 1
+            p["streak"] = p.get("streak", 0) + 1
+            if p["streak"] % 3 == 0 and not p.get("hat"):   # first hat trick pays a bonus
+                p["hat"], bonus = True, HAT_BONUS
         elif choice is not None:
             p["wrong"] += 1
+            p["streak"] = 0                                  # a pass doesn't break the streak
+        p["score"] += delta + bonus
         cell.update(done=True, outcome="skip" if choice is None else ("ok" if right else "no"), by=game["turn"])
         game["open"], game["wager"] = None, None
         a = cell["answer"]
         out = {"correct": correct, "right": right, "delta": delta, "stake": stake, "dd": cell["dd"],
                "answer": {"t": a["t"], "a": a["a"], "y": a["y"], "r": a["r"], "c": a["c"], "d": a["d"]},
-               "outcome": cell["outcome"], "by": cell["by"]}
+               "outcome": cell["outcome"], "by": cell["by"], "bonus": bonus}
         game["turn"] = (game["turn"] + 1) % len(game["players"])
         out.update(players=public_players(game), turn=game["turn"])
         if all(c["done"] for c in game["cells"]):
