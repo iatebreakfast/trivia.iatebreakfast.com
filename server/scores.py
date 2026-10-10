@@ -49,6 +49,7 @@ DECOY_RULES = [(8, False), (6, False), (5, True), (3, True), (2, True)]   # (yea
 MIN_PER_CELL = 3
 WAGER_MIN = 5
 MAX_PLAYERS = 4
+ERAS = [(1946, 1965), (1966, 1985), (1986, 2005), (2006, 2020)]   # 20-year timelines players can pick
 NAME_RE = re.compile(r"^[A-Z0-9 .'!&-]{1,12}$")
 
 GAME_TTL = 6 * 3600              # unfinished games are dropped after this
@@ -126,10 +127,40 @@ def library_loop():
 
 
 # ── board building (same rules as the in-browser practice mode) ─
-def make_options(answer, row):
+def era_label(eras):
+    """Readable label for a set of era indexes; None means the entire archive."""
+    if not eras or len(eras) == len(ERAS):
+        return None
+    runs, start, prev = [], None, None
+    for i in sorted(eras):
+        if start is None:
+            start = prev = i
+        elif i == prev + 1:
+            prev = i
+        else:
+            runs.append((start, prev)); start = prev = i
+    runs.append((start, prev))
+    return " + ".join(f"{ERAS[a][0]}–{ERAS[b][1]}" for a, b in runs)
+
+
+def in_eras(year, eras):
+    return any(ERAS[i][0] <= year <= ERAS[i][1] for i in eras)
+
+
+def genres_for(tracks):
+    """Genres with enough songs in every value row to fill a column."""
+    out = {}
+    for name in {t["g"] for t in tracks if t["g"]}:
+        gt = [t for t in tracks if t["g"] == name]
+        if all(sum(1 for t in gt if t["row"] == row) >= MIN_PER_CELL for row in range(len(VALUES))):
+            out[name] = gt
+    return out
+
+
+def make_options(answer, row, tracks=None):
     span, same_genre = DECOY_RULES[row]
     taken, decoys = {answer["k"]}, []
-    tracks = LIB["tracks"]
+    tracks = tracks or LIB["tracks"]
     tries = [
         lambda t: abs(t["y"] - answer["y"]) <= span and (not same_genre or t["g"] == answer["g"]),
         lambda t: abs(t["y"] - answer["y"]) <= span * 2 and (not same_genre or t["g"] == answer["g"]),
@@ -153,7 +184,7 @@ def make_options(answer, row):
     return opts
 
 
-def fill_cell(cell, gtracks, used):
+def fill_cell(cell, gtracks, used, pool=None):
     pool = [t for t in gtracks if t["row"] == cell["row"] and t["k"] not in used] or \
            [t for t in gtracks if t["row"] == cell["row"]]
     answer = random.choice(pool)
@@ -162,26 +193,32 @@ def fill_cell(cell, gtracks, used):
     lo = min(max(15, dur * .22), max(0, dur - length - 5))
     hi = max(lo, dur * .6 - length)
     start = lo + random.random() * (hi - lo)
-    cell.update(answer=answer, options=make_options(answer, cell["row"]),
+    cell.update(answer=answer, options=make_options(answer, cell["row"], pool),
                 start=round(start, 1), end=round(min(dur - 1, start + length), 1))
 
 
-def new_game(names, ip):
-    genres = LIB["genres"]
+def new_game(names, ip, eras):
+    if len(eras) == len(ERAS):
+        pool, genres = None, LIB["genres"]
+    else:
+        pool = [t for t in LIB["tracks"] if in_eras(t["y"], eras)]
+        genres = genres_for(pool)
+        if len(genres) < COLUMNS:
+            raise ApiError(400, "not enough songs in that era — pick another timeline")
     cats = random.sample(sorted(genres), min(COLUMNS, len(genres)))
     used, cells = set(), []
     for col, g in enumerate(cats):
         for row, value in enumerate(VALUES):
             cell = {"i": len(cells), "col": col, "row": row, "value": value, "genre": g,
                     "dd": False, "done": False, "outcome": None, "by": None}
-            fill_cell(cell, genres[g], used)
+            fill_cell(cell, genres[g], used, pool)
             cells.append(cell)
     random.choice([c for c in cells if c["row"] > 0])["dd"] = True
     gid = secrets.token_urlsafe(12)
     game = {
         "id": gid, "created": time.time(), "ip": ip, "cats": cats, "cells": cells,
         "players": [{"name": n, "score": 0, "right": 0, "wrong": 0, "asked": 0, "fifty": True} for n in names],
-        "turn": 0, "open": None, "wager": None, "finished": False,
+        "turn": 0, "open": None, "wager": None, "finished": False, "eras": sorted(eras),
     }
     games[gid] = game
     return game
@@ -256,7 +293,7 @@ def public_rows(rows, limit):
     out = []
     for r in rows[:limit]:
         out.append({"name": r["name"], "score": r["score"], "right": r.get("right"), "total": r.get("total"),
-                    "players": r.get("players", 1), "at": r["at"]})
+                    "players": r.get("players", 1), "at": r["at"], "era": r.get("era")})
     return out
 
 
@@ -271,7 +308,7 @@ def record_finished(game):
             mine.append(None)
             continue
         e = {"name": p["name"], "score": p["score"], "right": p["right"], "total": p["asked"],
-             "players": n, "at": at, "game": game["id"]}
+             "players": n, "at": at, "game": game["id"], "era": era_label(game["eras"])}
         rows.append(e)
         mine.append(e)
     rows = ranked(rows)[:KEEP]
@@ -394,16 +431,23 @@ class Handler(BaseHTTPRequestHandler):
             clean.append(n)
         if len(clean) > 1 and not all(clean):
             raise ApiError(400, "every player needs a name")
+        eras = body.get("eras")
+        if eras in (None, [], "all"):
+            eras = list(range(len(ERAS)))
+        if not isinstance(eras, list) or not all(isinstance(i, int) and 0 <= i < len(ERAS) for i in eras):
+            raise ApiError(400, "bad era")
+        eras = sorted(set(eras))
         ip, now = self._ip(), time.time()
         with lock:
             if now - last_new.get(ip, 0) < NEW_GAME_GAP:
                 raise ApiError(429, "slow down")
             last_new[ip] = now
             prune()
-            game = new_game(clean, ip)
+            game = new_game(clean, ip, eras)
             return {"id": game["id"], "cats": game["cats"], "values": VALUES,
                     "cells": [{"i": c["i"], "col": c["col"], "row": c["row"], "value": c["value"]} for c in game["cells"]],
-                    "players": public_players(game), "turn": game["turn"]}
+                    "players": public_players(game), "turn": game["turn"],
+                    "eras": game["eras"], "era": era_label(game["eras"])}
 
     def _cell(self, game, i):
         try:
