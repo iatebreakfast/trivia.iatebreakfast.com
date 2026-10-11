@@ -23,6 +23,7 @@ The song catalog is `https://audio.iatebreakfast.com/library.json`, the same fil
   | $800   | #61–80                           | 7 s         | Same genre, within 3 years           |
   | $1,000 | #81–100                          | 6 s         | Same genre, within 2 years           |
 
+- **Clips never sing the title.** The server looks up each song's timed lyrics on [LRCLIB](https://lrclib.net) (a free lyrics database) and saves where the title is sung in `title-lyrics.json` next to the scores. When the title is sung, the clip is 6 seconds long and placed where it isn't. Songs with no timed lyrics get a 6-second clip from the first verse. The first lookup takes about an hour after the server starts; new songs are checked every hour. `tools/title_lyrics.py` can also build the file by hand.
 - **Scoring:** Jeopardy rules. A right answer adds the value and a wrong one subtracts it, so scores can go negative. Passing costs nothing.
 - **"Final answer":** your pick locks in for a beat before the reveal. The cover art appears and the song keeps playing for 12 seconds.
 - **Double Win:** one secret square per board (never in the $200 row). You enter a wager on the on-screen number pad, from $5 up to your score (or $1,000 if you have less). A right answer pays **double the wager**, and a wrong one loses it.
