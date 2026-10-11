@@ -47,7 +47,8 @@ COLUMNS = 6
 VALUES = [200, 400, 600, 800, 1000]
 RANK_BANDS = [(1, 20), (21, 40), (41, 60), (61, 80), (81, 100)]
 CLIP_SECS = [12, 10, 8, 7, 6]
-SAFE_SECS = 6          # clip length for songs whose title is sung (clip avoids those lines)
+SAFE_SECS = 6          # clip length for songs whose title is sung (clip avoids those lines) …
+FULL_ROWS = {0}        # … except these rows ($200), which always get their full CLIP_SECS length
 DECOY_RULES = [(8, False), (6, False), (5, True), (3, True), (2, True)]   # (years, same genre)
 MIN_PER_CELL = 3
 WAGER_MIN = 5
@@ -237,19 +238,19 @@ def fill_cell(cell, gtracks, used, era_tracks=None):
            [t for t in gtracks if t["row"] == cell["row"]]
     answer = random.choice(pool)
     used.add(answer["k"])
-    start, length = pick_clip(answer, CLIP_SECS[cell["row"]])
+    start, length = pick_clip(answer, CLIP_SECS[cell["row"]], cell["row"] in FULL_ROWS)
     cell.update(answer=answer, options=make_options(answer, cell["row"], era_tracks),
                 start=round(start, 1), end=round(min(answer["s"] - 1, start + length), 1))
 
 
-def pick_clip(t, length):
-    """Start and length of a clip that doesn't sing the song's title."""
+def pick_clip(t, length, full=False):
+    """Start and length of a clip that doesn't sing the song's title (full=True keeps the length)."""
     dur, tw = t["s"], t.get("tw")
     if tw is None:                                    # no timed lyrics: short clip from the first verse
-        length = min(length, SAFE_SECS)
+        length = length if full else min(length, SAFE_SECS)
         lo, hi = min(8, dur / 4), max(min(8, dur / 4), min(dur * .22, 45) - length)
         return lo + random.random() * (hi - lo), length
-    if tw:
+    if tw and not full:
         length = min(length, SAFE_SECS)
     clear = lambda a: all(a + length <= w0 or a >= w1 for w0, w1 in tw)
     lo = min(max(15, dur * .22), max(0, dur - length - 5))
@@ -260,7 +261,7 @@ def pick_clip(t, length):
             return random.choice(starts), length
     gaps = [(w0 - p, p) for p, (w0, _) in zip([0] + [w[1] for w in tw], tw)] + [(dur - 1 - tw[-1][1], tw[-1][1])]
     gap, a = max(gaps)                                # title sung all through: biggest gap, however short
-    return a, max(3, min(length, gap))
+    return a, length if full else max(3, min(length, gap))
 
 
 def new_game(names, ip, eras):
