@@ -36,6 +36,8 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 # ── settings ────────────────────────────────────────────────
 SCORES_FILE = os.environ.get("SCORES_FILE", "/data/scores.json")
 GENRES_FILE = os.environ.get("GENRES_FILE", "/app/genres.json")
+# Where each song's title is sung, from LRCLIB timed lyrics. Built and kept up to date by titles_loop().
+TITLES_FILE = os.environ.get("TITLES_FILE", os.path.join(os.path.dirname(SCORES_FILE), "title-lyrics.json"))
 LIBRARY_URL = os.environ.get("LIBRARY_URL", "https://audio.iatebreakfast.com/library.json")
 AUDIO_BASE = os.environ.get("AUDIO_BASE", "https://audio.iatebreakfast.com/")
 PORT = int(os.environ.get("PORT", "8000"))
@@ -45,6 +47,7 @@ COLUMNS = 6
 VALUES = [200, 400, 600, 800, 1000]
 RANK_BANDS = [(1, 20), (21, 40), (41, 60), (61, 80), (81, 100)]
 CLIP_SECS = [12, 10, 8, 7, 6]
+SAFE_SECS = 6          # clip length for songs whose title is sung (clip avoids those lines)
 DECOY_RULES = [(8, False), (6, False), (5, True), (3, True), (2, True)]   # (years, same genre)
 MIN_PER_CELL = 3
 WAGER_MIN = 5
@@ -66,6 +69,11 @@ games = {}                       # id -> game
 clips = {}                       # token -> (audio path, expires)
 last_new = {}                    # ip -> time
 LIB = {"tracks": [], "genres": {}, "loaded": 0, "error": None}
+try:
+    with open(TITLES_FILE, encoding="utf-8") as f:
+        TITLES = json.load(f)
+except (OSError, ValueError):
+    TITLES = {}
 
 
 # ── library ─────────────────────────────────────────────────
@@ -109,6 +117,7 @@ def load_library():
                 "c": t.get("c"), "d": t.get("d") or f"{int(t['y']) // 10 * 10}s",
                 "path": path, "k": norm(t["t"]), "row": row_for_rank(t.get("r")),
                 "g": labels[gi] if gi is not None else None,
+                "tw": TITLES.get(f"{t['a']}|{t['t']}", {}).get("w"),   # None = unknown
             })
         genres = {}
         for name in labels:
@@ -127,6 +136,42 @@ def library_loop():
     while True:
         load_library()
         time.sleep(LIBRARY_REFRESH if LIB["tracks"] else 60)
+
+
+def save_titles():
+    fd, tmp = tempfile.mkstemp(dir=os.path.dirname(TITLES_FILE) or ".")
+    with os.fdopen(fd, "w", encoding="utf-8") as f:
+        json.dump(TITLES, f, separators=(",", ":"), sort_keys=True)
+    os.replace(tmp, TITLES_FILE)
+
+
+def titles_loop():
+    """Look up timed lyrics for songs we haven't checked yet (the first run takes about an hour)."""
+    import sys
+    sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "tools"))
+    from concurrent.futures import ThreadPoolExecutor
+    import title_lyrics
+    while True:
+        todo = {f"{t['a']}|{t['t']}": t for t in LIB["tracks"]}
+        by_key = {}
+        for x in LIB["tracks"]:
+            by_key.setdefault(f"{x['a']}|{x['t']}", []).append(x)
+        todo = [t for k, t in todo.items() if k not in TITLES]
+        if todo:
+            print(f"title lyrics: looking up {len(todo)} songs", flush=True)
+            with ThreadPoolExecutor(4) as ex:
+                for n, (t, res) in enumerate(zip(todo, ex.map(title_lyrics.lookup, todo)), 1):
+                    key = f"{t['a']}|{t['t']}"
+                    TITLES[key] = res
+                    for x in by_key.get(key, []):
+                        x["tw"] = res.get("w")
+                    if n % 100 == 0 or n == len(todo):
+                        try:
+                            save_titles()
+                        except OSError as e:
+                            print(f"title lyrics: can't save: {e}", flush=True)
+            print(f"title lyrics: {len(TITLES)} songs checked", flush=True)
+        time.sleep(3600 if LIB["tracks"] else 60)
 
 
 # ── board building (same rules as the in-browser practice mode) ─
@@ -192,12 +237,30 @@ def fill_cell(cell, gtracks, used, era_tracks=None):
            [t for t in gtracks if t["row"] == cell["row"]]
     answer = random.choice(pool)
     used.add(answer["k"])
-    dur, length = answer["s"], CLIP_SECS[cell["row"]]
+    start, length = pick_clip(answer, CLIP_SECS[cell["row"]])
+    cell.update(answer=answer, options=make_options(answer, cell["row"], era_tracks),
+                start=round(start, 1), end=round(min(answer["s"] - 1, start + length), 1))
+
+
+def pick_clip(t, length):
+    """Start and length of a clip that doesn't sing the song's title."""
+    dur, tw = t["s"], t.get("tw")
+    if tw is None:                                    # no timed lyrics: short clip from the first verse
+        length = min(length, SAFE_SECS)
+        lo, hi = min(8, dur / 4), max(min(8, dur / 4), min(dur * .22, 45) - length)
+        return lo + random.random() * (hi - lo), length
+    if tw:
+        length = min(length, SAFE_SECS)
+    clear = lambda a: all(a + length <= w0 or a >= w1 for w0, w1 in tw)
     lo = min(max(15, dur * .22), max(0, dur - length - 5))
     hi = max(lo, dur * .6 - length)
-    start = lo + random.random() * (hi - lo)
-    cell.update(answer=answer, options=make_options(answer, cell["row"], era_tracks),
-                start=round(start, 1), end=round(min(dur - 1, start + length), 1))
+    for a, b in ((lo, hi), (8, dur - length - 2)):     # the usual part of the song, then anywhere
+        starts = [a + i * .5 for i in range(int((b - a) / .5) + 1) if clear(a + i * .5)]
+        if starts:
+            return random.choice(starts), length
+    gaps = [(w0 - p, p) for p, (w0, _) in zip([0] + [w[1] for w in tw], tw)] + [(dur - 1 - tw[-1][1], tw[-1][1])]
+    gap, a = max(gaps)                                # title sung all through: biggest gap, however short
+    return a, max(3, min(length, gap))
 
 
 def new_game(names, ip, eras):
@@ -240,7 +303,7 @@ def clip_payload(game, cell):
         "clip": {"src": f"/api/clip/{token}", "start": cell["start"], "end": cell["end"]},
         "options": [o["t"] for o in cell["options"]],
         "decade": cell["answer"]["d"],
-        "clipSecs": CLIP_SECS[cell["row"]],
+        "clipSecs": round(cell["end"] - cell["start"]),
     }
 
 
@@ -546,5 +609,6 @@ class Handler(BaseHTTPRequestHandler):
 
 if __name__ == "__main__":
     threading.Thread(target=library_loop, daemon=True).start()
+    threading.Thread(target=titles_loop, daemon=True).start()
     print(f"trivia-scores listening on :{PORT}, scores {SCORES_FILE}", flush=True)
     ThreadingHTTPServer(("0.0.0.0", PORT), Handler).serve_forever()
